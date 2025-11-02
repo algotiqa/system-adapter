@@ -32,7 +32,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bit-fever/core/datatype"
+	"github.com/tradalia/core/datatype"
 )
 
 //=============================================================================

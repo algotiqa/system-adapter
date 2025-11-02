@@ -29,7 +29,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/bit-fever/system-adapter/pkg/adapter"
+	"github.com/tradalia/system-adapter/pkg/adapter"
 	"golang.org/x/net/html"
 	"log/slog"
 	"net/http"

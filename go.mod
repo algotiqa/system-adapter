@@ -1,9 +1,9 @@
-module github.com/bit-fever/system-adapter
+module github.com/tradalia/system-adapter
 
 go 1.24.0
 
 require (
-	github.com/bit-fever/core v1.10.12
+	github.com/tradalia/core v1.10.12
 	github.com/gin-gonic/gin v1.11.0
 	golang.org/x/net v0.44.0
 )

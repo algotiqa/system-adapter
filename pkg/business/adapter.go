@@ -25,9 +25,9 @@ THE SOFTWARE.
 package business
 
 import (
-	"github.com/bit-fever/system-adapter/pkg/adapter"
-	"github.com/bit-fever/system-adapter/pkg/adapter/local"
-	"github.com/bit-fever/system-adapter/pkg/adapter/tradestation"
+	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/tradalia/system-adapter/pkg/adapter/local"
+	"github.com/tradalia/system-adapter/pkg/adapter/tradestation"
 )
 
 //=============================================================================

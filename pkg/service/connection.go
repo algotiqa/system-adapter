@@ -25,10 +25,10 @@ THE SOFTWARE.
 package service
 
 import (
-	"github.com/bit-fever/core/auth"
-	"github.com/bit-fever/core/datatype"
-	"github.com/bit-fever/core/req"
-	"github.com/bit-fever/system-adapter/pkg/business"
+	"github.com/tradalia/core/auth"
+	"github.com/tradalia/core/datatype"
+	"github.com/tradalia/core/req"
+	"github.com/tradalia/system-adapter/pkg/business"
 	"github.com/gin-gonic/gin"
 	"log/slog"
 	"net/http"

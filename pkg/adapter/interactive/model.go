@@ -25,7 +25,7 @@ THE SOFTWARE.
 package interactive
 
 import (
-	"github.com/bit-fever/system-adapter/pkg/adapter"
+	"github.com/tradalia/system-adapter/pkg/adapter"
 	"net/http"
 )
 

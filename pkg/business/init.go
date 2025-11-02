@@ -25,7 +25,7 @@ THE SOFTWARE.
 package business
 
 import (
-	"github.com/bit-fever/core/msg"
+	"github.com/tradalia/core/msg"
 	"log/slog"
 	"os"
 )

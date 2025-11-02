@@ -25,13 +25,13 @@ THE SOFTWARE.
 package main
 
 import (
-	"github.com/bit-fever/core/boot"
-	"github.com/bit-fever/core/msg"
-	"github.com/bit-fever/core/req"
-	"github.com/bit-fever/system-adapter/pkg/app"
-	"github.com/bit-fever/system-adapter/pkg/business"
-	"github.com/bit-fever/system-adapter/pkg/process"
-	"github.com/bit-fever/system-adapter/pkg/service"
+	"github.com/tradalia/core/boot"
+	"github.com/tradalia/core/msg"
+	"github.com/tradalia/core/req"
+	"github.com/tradalia/system-adapter/pkg/app"
+	"github.com/tradalia/system-adapter/pkg/business"
+	"github.com/tradalia/system-adapter/pkg/process"
+	"github.com/tradalia/system-adapter/pkg/service"
 	"log/slog"
 )
 

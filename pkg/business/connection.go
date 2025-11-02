@@ -25,11 +25,11 @@ THE SOFTWARE.
 package business
 
 import (
-	"github.com/bit-fever/core/auth"
-	"github.com/bit-fever/core/datatype"
-	"github.com/bit-fever/core/msg"
-	"github.com/bit-fever/core/req"
-	"github.com/bit-fever/system-adapter/pkg/adapter"
+	"github.com/tradalia/core/auth"
+	"github.com/tradalia/core/datatype"
+	"github.com/tradalia/core/msg"
+	"github.com/tradalia/core/req"
+	"github.com/tradalia/system-adapter/pkg/adapter"
 	"sync"
 )
 

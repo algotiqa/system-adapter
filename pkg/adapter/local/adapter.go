@@ -25,8 +25,8 @@ THE SOFTWARE.
 package local
 
 import (
-	"github.com/bit-fever/core/datatype"
-	"github.com/bit-fever/system-adapter/pkg/adapter"
+	"github.com/tradalia/core/datatype"
+	"github.com/tradalia/system-adapter/pkg/adapter"
 	"net/http"
 )
 

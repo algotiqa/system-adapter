@@ -25,10 +25,10 @@ THE SOFTWARE.
 package tokenrefresh
 
 import (
-	"github.com/bit-fever/core/msg"
-	"github.com/bit-fever/system-adapter/pkg/adapter"
-	"github.com/bit-fever/system-adapter/pkg/app"
-	"github.com/bit-fever/system-adapter/pkg/business"
+	"github.com/tradalia/core/msg"
+	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/tradalia/system-adapter/pkg/app"
+	"github.com/tradalia/system-adapter/pkg/business"
 	"log/slog"
 	"time"
 )

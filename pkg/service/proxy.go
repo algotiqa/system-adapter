@@ -27,9 +27,9 @@ package service
 import (
 	"bytes"
 	"crypto/tls"
-	"github.com/bit-fever/core/req"
-	"github.com/bit-fever/system-adapter/pkg/adapter"
-	"github.com/bit-fever/system-adapter/pkg/business"
+	"github.com/tradalia/core/req"
+	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/tradalia/system-adapter/pkg/business"
 	"github.com/gin-gonic/gin"
 	"io"
 	"log/slog"

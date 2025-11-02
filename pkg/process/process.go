@@ -25,8 +25,8 @@ THE SOFTWARE.
 package process
 
 import (
-	"github.com/bit-fever/system-adapter/pkg/app"
-	"github.com/bit-fever/system-adapter/pkg/process/tokenrefresh"
+	"github.com/tradalia/system-adapter/pkg/app"
+	"github.com/tradalia/system-adapter/pkg/process/tokenrefresh"
 )
 
 //=============================================================================
