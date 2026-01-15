@@ -102,8 +102,7 @@ func (a *tradestation) refreshTokenBrowser() error {
 
 	tr,err := a.getTokens(params)
 	if err == nil {
-		a.accessToken  = tr.AccessToken
-		a.refreshToken = tr.RefreshToken
+		a.accessToken = tr.AccessToken
 
 		if a.accessToken == "" {
 			err = errors.New("empty access token (refresh token is not working)")
