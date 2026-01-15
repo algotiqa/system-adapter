@@ -29,12 +29,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/tradalia/system-adapter/pkg/adapter"
-	"golang.org/x/net/html"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/tradalia/core/req"
+	"github.com/tradalia/system-adapter/pkg/adapter"
+	"golang.org/x/net/html"
 )
 
 //=============================================================================
@@ -108,6 +110,82 @@ type TokenRefreshResponse struct {
 //===
 //=== Methods
 //===
+//=============================================================================
+
+func (a *tradestation) connectInternal(ctx *adapter.ConnectionContext) *adapter.ConnectionResult {
+	loginInfo,err := a.createLoginInfo()
+	if err != nil {
+		return connectError(err)
+	}
+
+	a.clientId = loginInfo.Client
+
+	loginRes,err := a.login(loginInfo)
+	if err != nil {
+		return connectError(err)
+	}
+
+	newState, err := a.callCallback(loginRes)
+	if err != nil {
+		return connectError(err)
+	}
+
+	err = a.submitTwoFACode(newState)
+	if err != nil {
+		return connectError(err)
+	}
+
+	a.setupAPIUrl()
+
+	//--- Test tokens & accounts
+	err = a.testToken()
+	if err != nil {
+		return connectError(err)
+	}
+
+	return &adapter.ConnectionResult{
+		Status: adapter.ContextStatusConnected,
+	}
+}
+
+//=============================================================================
+
+func (a *tradestation) refreshTokenInternal() error {
+	payload := bytes.NewBufferString("")
+
+	rq, err := http.NewRequest("POST", RefreshTokenUrl, payload)
+	if err != nil {
+		return err
+	}
+
+	setupCommonHeader(&rq.Header)
+	rq.Header.Set("Accept",         "*/*")
+	rq.Header.Set("Origin",         "https://my.tradestation.com")
+	rq.Header.Set("Sec-Fetch-Dest", "empty")
+	rq.Header.Set("Sec-Fetch-Mode", "cors")
+	rq.Header.Set("Sec-Fetch-Site", "same-origin")
+
+	res, err := a.client.Do(rq)
+
+	var out TokenRefreshResponse
+	err = req.BuildResponse(res, err, &out)
+
+	if err == nil {
+		a.accessToken = out.AccessToken
+		a.refreshToken= out.IdToken
+
+		if a.accessToken == "" {
+			err = errors.New("Got an empty access token (refresh token is not working)")
+		}
+	}
+
+	if res != nil && res.Body != nil {
+		_=res.Body.Close()
+	}
+
+	return err
+}
+
 //=============================================================================
 
 func (a *tradestation) createLoginInfo() (*LoginInfo, error){
@@ -336,8 +414,8 @@ func (a *tradestation) testToken() error {
 
 func retrieveConfigParams(values map[string]any) *ConfigParams {
 	return &ConfigParams{
-		ClientId    : values[ParamClientId]   .(string),
-		LiveAccount : values[ParamLiveAccount].(bool),
+		Account : getString(values, ParamAccount),
+		AuthType: getString(values, ParamAuthType),
 	}
 }
 
@@ -345,10 +423,24 @@ func retrieveConfigParams(values map[string]any) *ConfigParams {
 
 func retrieveConnectParams(values map[string]any) *ConnectParams {
 	return &ConnectParams{
-		Username  : values[adapter.ParamUsername] .(string),
-		Password  : values[adapter.ParamPassword] .(string),
-		TwoFACode : values[adapter.ParamTwoFACode].(string),
+		Username    : getString(values, adapter.ParamUsername),
+		Password    : getString(values, adapter.ParamPassword),
+		TwoFACode   : getString(values, adapter.ParamTwoFACode),
+		ClientId    : getString(values, ParamClientId),
+		ClientSecret: getString(values, ParamClientSecret),
+		ClientCode  : getString(values, ParamClientCode),
 	}
+}
+
+//=============================================================================
+
+func getString(values map[string]any, name string) string {
+	value,ok := values[name]
+	if !ok {
+		return ""
+	}
+
+	return value.(string)
 }
 
 //=============================================================================
@@ -454,6 +546,15 @@ func toString(node *html.Node) string {
 	}
 
 	return b.String()
+}
+
+//=============================================================================
+
+func connectError(err error) *adapter.ConnectionResult {
+	return &adapter.ConnectionResult{
+		Status : adapter.ContextStatusError,
+		Message: err.Error(),
+	}
 }
 
 //=============================================================================

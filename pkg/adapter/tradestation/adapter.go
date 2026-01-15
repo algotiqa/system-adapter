@@ -74,7 +74,18 @@ func (a *tradestation) Clone(configParams map[string]any, connectParams map[stri
 
 //=============================================================================
 
-func (a *tradestation) Connect(ctx *adapter.ConnectionContext) (adapter.ConnectionResult,error) {
+func (a *tradestation) GetConnectParams(configParams map[string]any) []*adapter.ParamDef {
+	cp := retrieveConfigParams(configParams)
+	if cp.AuthType == ParamAuthTypeBrowser {
+		return connectParamsBrowser
+	}
+
+	return connectParamsInternal
+}
+
+//=============================================================================
+
+func (a *tradestation) Connect(ctx *adapter.ConnectionContext) *adapter.ConnectionResult {
 	jar,_:= cookiejar.New(nil)
 
 	a.client = &http.Client{
@@ -86,40 +97,11 @@ func (a *tradestation) Connect(ctx *adapter.ConnectionContext) (adapter.Connecti
 		},
 	}
 
-	loginInfo,err := a.createLoginInfo()
-	if err != nil {
-		return adapter.ConnectionResultError, err
+	if a.configParams.AuthType == ParamAuthTypeBrowser {
+		return a.connectBrowser(ctx)
 	}
 
-	a.clientId = loginInfo.Client
-
-	loginRes,err := a.login(loginInfo)
-	if err != nil {
-		return adapter.ConnectionResultError, err
-	}
-
-	newState, err := a.callCallback(loginRes)
-	if err != nil {
-		return adapter.ConnectionResultError, err
-	}
-
-	err = a.submitTwoFACode(newState)
-	if err != nil {
-		return adapter.ConnectionResultError, err
-	}
-
-	a.apiUrl = DemoAPI
-	if a.configParams.LiveAccount {
-		a.apiUrl = LiveAPI
-	}
-
-	//--- Test tokens & accounts
-	err = a.testToken()
-	if err != nil {
-		return adapter.ConnectionResultError, err
-	}
-
-	return adapter.ConnectionResultConnected, nil
+	return a.connectInternal(ctx)
 }
 
 //=============================================================================
@@ -133,6 +115,7 @@ func (a *tradestation) Disconnect(ctx *adapter.ConnectionContext) error {
 func (a *tradestation) IsWebLoginCompleted(httpCode int, path string) bool {
 	return false
 }
+
 //=============================================================================
 
 func (a *tradestation) InitFromWebLogin(reqHeader *http.Header, resCookies []*http.Cookie) error {
@@ -148,39 +131,11 @@ func (a *tradestation) GetTokenExpSeconds() int {
 //=============================================================================
 
 func (a *tradestation) RefreshToken() error {
-	payload := bytes.NewBufferString("")
-
-	rq, err := http.NewRequest("POST", RefreshTokenUrl, payload)
-	if err != nil {
-		return err
+	if a.configParams.AuthType == ParamAuthTypeBrowser {
+		return a.refreshTokenBrowser()
 	}
 
-	setupCommonHeader(&rq.Header)
-	rq.Header.Set("Accept",         "*/*")
-	rq.Header.Set("Origin",         "https://my.tradestation.com")
-	rq.Header.Set("Sec-Fetch-Dest", "empty")
-	rq.Header.Set("Sec-Fetch-Mode", "cors")
-	rq.Header.Set("Sec-Fetch-Site", "same-origin")
-
-	res, err := a.client.Do(rq)
-
-	var out TokenRefreshResponse
-	err = req.BuildResponse(res, err, &out)
-
-	if err == nil {
-		a.accessToken = out.AccessToken
-		a.refreshToken= out.IdToken
-
-		if a.accessToken == "" {
-			err = errors.New("Got an empty access token (refresh token is not working)")
-		}
-	}
-
-	if res != nil && res.Body != nil {
-		_=res.Body.Close()
-	}
-
-	return err
+	return a.refreshTokenInternal()
 }
 
 //=============================================================================
@@ -498,6 +453,19 @@ func (a *tradestation) doPost(url string, params any, output any) error {
 	return req.BuildResponse(res, err, &output)
 }
 
+//=============================================================================
+
+func (a *tradestation) setupAPIUrl() {
+	a.apiUrl = DemoAPI
+	if a.configParams.Account == ParamAccountLive {
+		a.apiUrl = LiveAPI
+	}
+}
+
+//=============================================================================
+//===
+//=== General private functions
+//===
 //=============================================================================
 
 func convertAccounts(ar *AccountsResponse) []*adapter.Account {

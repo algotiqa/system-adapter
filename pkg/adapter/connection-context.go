@@ -50,9 +50,10 @@ const (
 type ContextStatus int
 
 const (
-	ContextStatusDisconnected = 0
-	ContextStatusConnecting   = 1
-	ContextStatusConnected    = 2
+	ContextStatusError        = -1
+	ContextStatusDisconnected =  0
+	ContextStatusConnecting   =  1
+	ContextStatusConnected    =  2
 )
 
 //=============================================================================
@@ -72,13 +73,13 @@ type ConnectionContext struct {
 
 //=============================================================================
 
-func NewConnectionContext(username string, connectionCode string, host string, a Adapter, configParams, connectParams map[string]any) (*ConnectionContext,error) {
-	err := validateParameters(a.GetInfo().ConfigParams, configParams)
+func NewConnectionContext(username string, connectionCode string, host string, a Adapter, configValues, connectValues map[string]any) (*ConnectionContext,error) {
+	err := validateParameters(a.GetInfo().ConfigParams, configValues)
 	if err != nil {
 		return nil, err
 	}
 
-	err = validateParameters(a.GetInfo().ConnectParams, connectParams)
+	err = validateParameters(a.GetInfo().ConnectParams, connectValues)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +88,7 @@ func NewConnectionContext(username string, connectionCode string, host string, a
 		Username      : username,
 		ConnectionCode: connectionCode,
 		Host          : host,
-		adapter       : a.Clone(configParams, connectParams),
+		adapter       : a.Clone(configValues, connectValues),
 		status        : ContextStatusDisconnected,
 		refreshRetries: RefreshRetries,
 	},nil
@@ -131,25 +132,16 @@ func (cc *ConnectionContext) IsDisconnected() bool {
 
 //=============================================================================
 
-func (cc *ConnectionContext) Connect() (ConnectionResult, error) {
-	cr,err := cc.adapter.Connect(cc)
+func (cc *ConnectionContext) Connect() *ConnectionResult {
+	cr := cc.adapter.Connect(cc)
+	cc.status = cr.Status
 
-	if err == nil {
-		switch cr {
-			case ConnectionResultConnected:
-				cc.status          = ContextStatusConnected
-				cc.ConnectedSince  = time.Now()
-				cc.lastRefreshTime = cc.ConnectedSince
-
-			case ConnectionResultOpenUrl:
-				cc.status = ContextStatusConnecting
-
-			case ConnectionResultProxyUrl:
-				cc.status = ContextStatusConnecting
-		}
+	if cr.Status == ContextStatusConnected {
+		cc.ConnectedSince  = time.Now()
+		cc.lastRefreshTime = cc.ConnectedSince
 	}
 
-	return cr,err
+	return cr
 }
 
 //=============================================================================

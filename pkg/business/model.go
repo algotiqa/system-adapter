@@ -25,16 +25,17 @@ THE SOFTWARE.
 package business
 
 import (
-	"github.com/tradalia/system-adapter/pkg/adapter"
 	"sync"
+
+	"github.com/tradalia/system-adapter/pkg/adapter"
 )
 
 //=============================================================================
 
 type ConnectionSpec struct {
 	SystemCode     string         `json:"systemCode"     binding:"required"`
-	ConfigParams   map[string]any `json:"configParams"   binding:"required"`
-	ConnectParams  map[string]any `json:"connectParams"  binding:"required"`
+	ConfigValues   map[string]any `json:"configValues"   binding:"required"`
+	ConnectValues  map[string]any `json:"connectValues"  binding:"required"`
 }
 
 //=============================================================================
@@ -71,25 +72,6 @@ type ConnectionChangeSystemMessage struct {
 	ConnectionCode string                `json:"connectionCode"`
 	SystemCode     string                `json:"systemCode"`
 	Status         adapter.ContextStatus `json:"status"`
-}
-
-//=============================================================================
-
-const (
-	ConnectionStatusConnecting = "connecting"
-	ConnectionStatusConnected  = "connected"
-	ConnectionStatusError      = "error"
-
-	ConnectionActionNone       = "none"
-	ConnectionActionOpenUrl    = "open-url"
-)
-
-//-----------------------------------------------------------------------------
-
-type ConnectionResult struct {
-	Status  string `json:"status"`
-	Action  string `json:"action"`
-	Message string `json:"message"`
 }
 
 //=============================================================================

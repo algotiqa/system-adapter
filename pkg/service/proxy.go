@@ -27,10 +27,6 @@ package service
 import (
 	"bytes"
 	"crypto/tls"
-	"github.com/tradalia/core/req"
-	"github.com/tradalia/system-adapter/pkg/adapter"
-	"github.com/tradalia/system-adapter/pkg/business"
-	"github.com/gin-gonic/gin"
 	"io"
 	"log/slog"
 	"net/http"
@@ -38,6 +34,11 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/tradalia/core/req"
+	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/tradalia/system-adapter/pkg/business"
 )
 
 //=============================================================================

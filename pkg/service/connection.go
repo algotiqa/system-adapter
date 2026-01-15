@@ -25,14 +25,16 @@ THE SOFTWARE.
 package service
 
 import (
-	"github.com/tradalia/core/auth"
-	"github.com/tradalia/core/datatype"
-	"github.com/tradalia/core/req"
-	"github.com/tradalia/system-adapter/pkg/business"
-	"github.com/gin-gonic/gin"
 	"log/slog"
 	"net/http"
 	"net/url"
+
+	"github.com/gin-gonic/gin"
+	"github.com/tradalia/core/auth"
+	"github.com/tradalia/core/datatype"
+	"github.com/tradalia/core/req"
+	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/tradalia/system-adapter/pkg/business"
 )
 
 //=============================================================================
@@ -57,7 +59,7 @@ func connect(c *auth.Context) {
 	err  := c.BindParamsFromBody(&spec)
 
 	if err == nil {
-		var res *business.ConnectionResult
+		var res *adapter.ConnectionResult
 		res, err = business.Connect(c, code, &spec)
 		if err == nil {
 			_ = c.ReturnObject(res)

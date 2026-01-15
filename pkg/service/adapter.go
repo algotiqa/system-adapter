@@ -26,7 +26,7 @@ package service
 
 import (
 	"github.com/tradalia/core/auth"
-	"github.com/tradalia/core/req"
+	"github.com/tradalia/system-adapter/pkg/adapter"
 	"github.com/tradalia/system-adapter/pkg/business"
 )
 
@@ -41,13 +41,31 @@ func getAdapters(c *auth.Context) {
 
 func getAdapter(c *auth.Context) {
 	code := c.GetCodeFromUrl()
-	a    := business.GetAdapter(code)
+	a,err := business.GetAdapter(code)
 
-	if a != nil {
+	if err == nil {
 		_= c.ReturnObject(a)
-	} else {
-		c.ReturnError(req.NewNotFoundError(code))
 	}
+
+	c.ReturnError(err)
+}
+
+//=============================================================================
+
+func getConnectionParams(c *auth.Context) {
+	code   := c.GetCodeFromUrl()
+	config := map[string]any{}
+	err    := c.BindParamsFromBody(&config)
+
+	if err == nil {
+		var params []*adapter.ParamDef
+		params,err = business.GetConnectionParams(code, config)
+		if err == nil {
+			_= c.ReturnObject(params)
+		}
+	}
+
+	c.ReturnError(err)
 }
 
 //=============================================================================

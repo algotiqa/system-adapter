@@ -25,16 +25,33 @@ THE SOFTWARE.
 package tradestation
 
 import (
-	"github.com/tradalia/system-adapter/pkg/adapter"
 	"net/http"
+
+	"github.com/tradalia/system-adapter/pkg/adapter"
 )
 
 //=============================================================================
 //--- Config parameters
 
 const (
-	ParamClientId    = "clientId"
-	ParamLiveAccount = "liveAccount"
+	//--- Config params
+
+	ParamAccount      = "account"
+	ParamAuthType     = "authType"
+
+	//--- Connection params (authType="browser" )
+
+	ParamClientId     = "clientId"
+	ParamClientSecret = "clientSecret"
+	ParamClientCode   = "clientCode"
+
+	//--- List options
+
+	ParamAccountTest  = "test"
+	ParamAccountLive  = "live"
+
+	ParamAuthTypeBrowser  = "browser"
+	ParamAuthTypeInternal = "internal"
 )
 
 //=============================================================================
@@ -42,6 +59,9 @@ const (
 const (
 	LiveAPI = "https://api.tradestation.com"
 	DemoAPI = "https://sim-api.tradestation.com"
+
+	AuthorizeUrl       = "https://signin.tradestation.com/authorize"
+	OauthTokenUrl      = "https://signin.tradestation.com/oauth/token"
 
 	LoginPageUrl       = "https://my.tradestation.com/api/auth/login?returnTo=%2F"
 	LoginPostUrl       = "https://signin.tradestation.com/usernamepassword/login"
@@ -56,28 +76,45 @@ const (
 
 var configParams = []*adapter.ParamDef {
 	{
-		Name     : ParamClientId,
-		Type     : adapter.ParamTypeString,
-		DefValue : "TDoILDTVZjp0k5J0xsWbXS1yEUncnj08",
+		Name     : ParamAccount,
+		Type     : adapter.ParamTypeList,
+		DefValue : ParamAccountTest,
 		Nullable : false,
-		MinValue : 0,
-		MaxValue : 64,
-		GroupName: "",
+		Values   : []string{ ParamAccountTest, ParamAccountLive },
 	},
 	{
-		Name     : ParamLiveAccount,
-		Type     : adapter.ParamTypeBool,
-		DefValue : "false",
+		Name     : ParamAuthType,
+		Type     : adapter.ParamTypeList,
+		DefValue : ParamAuthTypeBrowser,
 		Nullable : false,
-		MinValue : 0,
-		MaxValue : 0,
-		GroupName: "",
+		Values   : []string{ ParamAuthTypeBrowser, ParamAuthTypeInternal },
 	},
 }
 
 //-----------------------------------------------------------------------------
 
-var connectParams = []*adapter.ParamDef {
+var connectParamsBrowser = []*adapter.ParamDef {
+	{
+		Name     : ParamClientId,
+		Type     : adapter.ParamTypeString,
+		DefValue : "",
+		Nullable : false,
+		MinValue : 0,
+		MaxValue : 64,
+	},
+	{
+		Name     : ParamClientSecret,
+		Type     : adapter.ParamTypeString,
+		DefValue : "",
+		Nullable : false,
+		MinValue : 0,
+		MaxValue : 64,
+	},
+}
+
+//-----------------------------------------------------------------------------
+
+var connectParamsInternal = []*adapter.ParamDef {
 	{
 		Name     : adapter.ParamUsername,
 		Type     : adapter.ParamTypeString,
@@ -85,7 +122,6 @@ var connectParams = []*adapter.ParamDef {
 		Nullable : false,
 		MinValue : 0,
 		MaxValue : 64,
-		GroupName: "",
 	},
 	{
 		Name     : adapter.ParamPassword,
@@ -94,7 +130,6 @@ var connectParams = []*adapter.ParamDef {
 		Nullable : false,
 		MinValue : 0,
 		MaxValue : 64,
-		GroupName: "",
 	},
 	{
 		Name     : adapter.ParamTwoFACode,
@@ -103,7 +138,19 @@ var connectParams = []*adapter.ParamDef {
 		Nullable : false,
 		MinValue : 0,
 		MaxValue : 64,
-		GroupName: "",
+	},
+}
+
+//-----------------------------------------------------------------------------
+
+var connectParamsCode = []*adapter.ParamDef {
+	{
+		Name     : ParamClientCode,
+		Type     : adapter.ParamTypeString,
+		DefValue : "",
+		Nullable : false,
+		MinValue : 0,
+		MaxValue : 128,
 	},
 }
 
@@ -113,7 +160,6 @@ var info = adapter.Info{
 	Code                : "TS",
 	Name                : "Tradestation",
 	ConfigParams        : configParams,
-	ConnectParams       : connectParams,
 	SupportsData        : true,
 	SupportsBroker      : true,
 	SupportsMultipleData: false,
@@ -123,16 +169,19 @@ var info = adapter.Info{
 //=============================================================================
 
 type ConfigParams struct {
-	ClientId    string
-	LiveAccount bool
+	Account  string
+	AuthType string
 }
 
 //=============================================================================
 
 type ConnectParams struct {
-	Username  string
-	Password  string
-	TwoFACode string
+	Username     string
+	Password     string
+	TwoFACode    string
+	ClientId     string
+	ClientSecret string
+	ClientCode   string
 }
 
 //=============================================================================
@@ -147,12 +196,5 @@ type tradestation struct {
 	clientId       string
 	apiUrl         string
 }
-
-//=============================================================================
-//===
-//=== Tradestation REST API structures
-//===
-//=============================================================================
-
 
 //=============================================================================

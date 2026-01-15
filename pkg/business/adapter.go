@@ -25,6 +25,7 @@ THE SOFTWARE.
 package business
 
 import (
+	"github.com/tradalia/core/req"
 	"github.com/tradalia/system-adapter/pkg/adapter"
 	"github.com/tradalia/system-adapter/pkg/adapter/local"
 	"github.com/tradalia/system-adapter/pkg/adapter/tradestation"
@@ -69,14 +70,24 @@ func GetAdapters() *[]*adapter.Info {
 
 //=============================================================================
 
-func GetAdapter(code string) *adapter.Info {
-	for _,a := range infos {
-		if a.Code == code {
-			return a
-		}
+func GetAdapter(code string) (*adapter.Info,error) {
+	a,ok := adapters[code]
+	if !ok {
+		return nil, req.NewNotFoundError(code)
 	}
 
-	return nil
+	return a.GetInfo(), nil
+}
+
+//=============================================================================
+
+func GetConnectionParams(code string, configParams map[string]any) ([]*adapter.ParamDef, error) {
+	a,ok := adapters[code]
+	if !ok {
+		return nil, req.NewNotFoundError(code)
+	}
+
+	return a.GetConnectParams(configParams), nil
 }
 
 //=============================================================================

@@ -25,12 +25,13 @@ THE SOFTWARE.
 package service
 
 import (
+	"log/slog"
+
+	"github.com/gin-gonic/gin"
 	"github.com/tradalia/core/auth"
 	"github.com/tradalia/core/auth/roles"
 	"github.com/tradalia/core/req"
 	"github.com/tradalia/system-adapter/pkg/app"
-	"github.com/gin-gonic/gin"
-	"log/slog"
 )
 
 //=============================================================================
@@ -39,14 +40,17 @@ func Init(router *gin.Engine, cfg *app.Config, logger *slog.Logger) {
 
 	ctrl := auth.NewOidcController(cfg.Authentication.Authority, req.GetClient("bf"), logger, cfg)
 
-	router.GET   ("/api/system/v1/adapters",                   ctrl.Secure(getAdapters,    roles.Admin_User))
-	router.GET   ("/api/system/v1/adapters/:code",             ctrl.Secure(getAdapter,     roles.Admin_User))
-	router.GET   ("/api/system/v1/connections",                ctrl.Secure(getConnections, roles.Admin_User))
-	router.PUT   ("/api/system/v1/connections/:code",          ctrl.Secure(connect,        roles.Admin_User))
-	router.DELETE("/api/system/v1/connections/:code",          ctrl.Secure(disconnect,     roles.Admin_User))
-
 	//--- Adapter services
 
+	router.GET   ("/api/system/v1/adapters",                   ctrl.Secure(getAdapters,         roles.Admin_User))
+	router.GET   ("/api/system/v1/adapters/:code",             ctrl.Secure(getAdapter,          roles.Admin_User))
+	router.POST  ("/api/system/v1/adapters/:code/connection",  ctrl.Secure(getConnectionParams, roles.Admin_User))
+
+	//--- Connection services
+
+	router.GET   ("/api/system/v1/connections",                                ctrl.Secure(getConnections, roles.Admin_User))
+	router.PUT   ("/api/system/v1/connections/:code",                          ctrl.Secure(connect,        roles.Admin_User))
+	router.DELETE("/api/system/v1/connections/:code",                          ctrl.Secure(disconnect,     roles.Admin_User))
 	router.GET   ("/api/system/v1/connections/:code/roots",                    ctrl.Secure(getRootSymbols, roles.Admin_User))
 	router.GET   ("/api/system/v1/connections/:code/roots/:root",              ctrl.Secure(getRootSymbol,  roles.Admin_User))
 	router.GET   ("/api/system/v1/connections/:code/roots/:root/instruments",  ctrl.Secure(getInstruments, roles.Admin_User_Service))
@@ -56,9 +60,8 @@ func Init(router *gin.Engine, cfg *app.Config, logger *slog.Logger) {
 	router.GET   ("/api/system/v1/connections/:code/positions",                ctrl.Secure(getPositions,   roles.Admin_User_Service))
 	router.POST  ("/api/system/v1/connections/:code/test",                     ctrl.Secure(testAdapter,    roles.Admin_User))
 
-	//TODO: To review
-	//router.GET   ("/api/system/v1/connections/:code/login",   webLogin)
-	//router.Use   (proxyLoginRequests)
+	router.GET   ("/api/system/v1/connections/:code/login",   webLogin)
+	router.Use   (proxyLoginRequests)
 }
 
 //=============================================================================

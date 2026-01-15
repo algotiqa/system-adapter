@@ -25,12 +25,13 @@ THE SOFTWARE.
 package business
 
 import (
+	"sync"
+
 	"github.com/tradalia/core/auth"
 	"github.com/tradalia/core/datatype"
 	"github.com/tradalia/core/msg"
 	"github.com/tradalia/core/req"
 	"github.com/tradalia/system-adapter/pkg/adapter"
-	"sync"
 )
 
 //=============================================================================
@@ -109,7 +110,7 @@ func GetConnectionContextByInstanceCode(instanceCode string) *adapter.Connection
 
 //=============================================================================
 
-func Connect(c *auth.Context, connectionCode string, cs *ConnectionSpec) (*ConnectionResult, error) {
+func Connect(c *auth.Context, connectionCode string, cs *ConnectionSpec) (*adapter.ConnectionResult, error) {
 	userConnections.Lock()
 	defer userConnections.Unlock()
 
@@ -126,16 +127,8 @@ func Connect(c *auth.Context, connectionCode string, cs *ConnectionSpec) (*Conne
 	ctx,found := uc.contexts[connectionCode]
 	if found {
 		if ctx.IsConnected() {
-			return &ConnectionResult{
-				Status : ConnectionStatusConnected,
-				Message: "Already connected",
-			}, nil
-		}
-
-		if ctx.IsConnecting() {
-			return &ConnectionResult{
-				Status : ConnectionStatusConnecting,
-				Message: "Still connecting",
+			return &adapter.ConnectionResult{
+				Status : adapter.ContextStatusConnected,
 			}, nil
 		}
 	}
@@ -146,52 +139,29 @@ func Connect(c *auth.Context, connectionCode string, cs *ConnectionSpec) (*Conne
 	}
 
 	var err error
-	ctx,err = adapter.NewConnectionContext(c.Session.Username, connectionCode, c.Gin.Request.Host, ad, cs.ConfigParams, cs.ConnectParams)
+	ctx,err = adapter.NewConnectionContext(c.Session.Username, connectionCode, c.Gin.Request.Host, ad, cs.ConfigValues, cs.ConnectValues)
 	if err != nil {
-		return &ConnectionResult{
-			Status : ConnectionStatusError,
-			Message: err.Error(),
-		}, nil
+		return connectError(err),nil
+	}
+
+	res := ctx.Connect()
+	if res.Status == adapter.ContextStatusError {
+		return res,nil
+	}
+
+	//--- At this point, status can be either Connected or Connecting
+
+	if res.Status == adapter.ContextStatusConnected {
+		err = sendConnectionChangeMessage(c, ctx)
+		if err != nil {
+			return nil,err
+		}
 	}
 
 	//--- It is better to store again the context even if it is already there: the user could use the
 	//--- same connection code but with a different adapter
 
 	uc.contexts[connectionCode] = ctx
-
-	res := &ConnectionResult{
-		Status : ConnectionStatusError,
-		Action: ConnectionActionNone,
-	}
-
-	cr,err := ctx.Connect()
-	if err != nil {
-		res.Message = err.Error()
-		return res,nil
-	}
-
-	err = sendConnectionChangeMessage(c, ctx)
-	if err != nil {
-		return &ConnectionResult{
-			Message: err.Error(),
-		}, nil
-	}
-
-	switch cr {
-		case adapter.ConnectionResultConnected:
-			res.Status = ConnectionStatusConnected
-
-		case adapter.ConnectionResultOpenUrl:
-			res.Status  = ConnectionStatusConnecting
-			res.Action  = ConnectionActionOpenUrl
-			res.Message = ctx.GetAdapterAuthUrl()
-
-		//TODO: to review: hardcoded url
-		case adapter.ConnectionResultProxyUrl:
-			res.Status  = ConnectionStatusConnecting
-			res.Action  = ConnectionActionOpenUrl
-			res.Message = "https://tradalia-server:8449/api/system/v1/weblogin/"+ user +"/"+ connectionCode +"/login"
-	}
 
 	return res, nil
 }
@@ -363,6 +333,15 @@ func getConnectionContext(c *auth.Context, connectionCode string) (*adapter.Conn
 	}
 
 	return ctx,nil
+}
+
+//=============================================================================
+
+func connectError(err error) *adapter.ConnectionResult {
+	return &adapter.ConnectionResult{
+		Status : adapter.ContextStatusError,
+		Message: err.Error(),
+	}
 }
 
 //=============================================================================

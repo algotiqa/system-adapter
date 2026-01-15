@@ -29,12 +29,13 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"github.com/tradalia/core/datatype"
-	"github.com/tradalia/core/req"
-	"github.com/tradalia/system-adapter/pkg/adapter"
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/tradalia/core/datatype"
+	"github.com/tradalia/core/req"
+	"github.com/tradalia/system-adapter/pkg/adapter"
 )
 
 //=============================================================================
@@ -65,15 +66,25 @@ func (a *ib) Clone(configParams map[string]any, connectParams map[string]any) ad
 
 //=============================================================================
 
-func (a *ib) Connect(ctx *adapter.ConnectionContext) (adapter.ConnectionResult,error) {
+func (a *ib) GetConnectParams(configParams map[string]any) []*adapter.ParamDef {
+	return []*adapter.ParamDef{}
+}
+
+//=============================================================================
+
+func (a *ib) Connect(ctx *adapter.ConnectionContext) *adapter.ConnectionResult {
 	if a.configParams.NoAuth {
 		//TODO: we should check if the connection actually works...
 		//---   connection to the gateway
 
-		return adapter.ConnectionResultConnected,nil
+		return &adapter.ConnectionResult{
+			Status: adapter.ContextStatusConnected,
+		}
 	}
 
-	return adapter.ConnectionResultProxyUrl,nil
+	return &adapter.ConnectionResult{
+		//--- Proxy url here
+	}
 }
 
 //=============================================================================

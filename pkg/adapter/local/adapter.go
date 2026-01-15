@@ -25,15 +25,15 @@ THE SOFTWARE.
 package local
 
 import (
+	"net/http"
+
 	"github.com/tradalia/core/datatype"
 	"github.com/tradalia/system-adapter/pkg/adapter"
-	"net/http"
 )
 
 //=============================================================================
 
 var configParams  []*adapter.ParamDef
-var connectParams []*adapter.ParamDef
 
 //-----------------------------------------------------------------------------
 
@@ -41,7 +41,6 @@ var info = adapter.Info{
 	Code                : "LOCAL",
 	Name                : "Local system",
 	ConfigParams        : configParams,
-	ConnectParams       : connectParams,
 	SupportsData        : true,
 	SupportsBroker      : true,
 	SupportsMultipleData: true,
@@ -80,8 +79,16 @@ func (a *local) Clone(configParams map[string]any, connectParams map[string]any)
 
 //=============================================================================
 
-func (a *local) Connect(ctx *adapter.ConnectionContext) (adapter.ConnectionResult,error) {
-	return adapter.ConnectionResultConnected,nil
+func (a *local) GetConnectParams(configParams map[string]any) []*adapter.ParamDef {
+	return []*adapter.ParamDef{}
+}
+
+//=============================================================================
+
+func (a *local) Connect(ctx *adapter.ConnectionContext) *adapter.ConnectionResult {
+	return &adapter.ConnectionResult{
+		Status: adapter.ContextStatusConnected,
+	}
 }
 
 //=============================================================================

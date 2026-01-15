@@ -25,8 +25,9 @@ THE SOFTWARE.
 package interactive
 
 import (
-	"github.com/tradalia/system-adapter/pkg/adapter"
 	"net/http"
+
+	"github.com/tradalia/system-adapter/pkg/adapter"
 )
 
 //=============================================================================
@@ -45,7 +46,6 @@ var configParams = []*adapter.ParamDef {
 		Nullable : false,
 		MinValue : 0,
 		MaxValue : 64,
-		GroupName: "",
 	},
 	{
 		Name     : ParamApiUrl,
@@ -54,7 +54,6 @@ var configParams = []*adapter.ParamDef {
 		Nullable : false,
 		MinValue : 0,
 		MaxValue : 64,
-		GroupName: "",
 	},
 	{
 		Name     : ParamNoAuth,
@@ -63,7 +62,6 @@ var configParams = []*adapter.ParamDef {
 		Nullable : false,
 		MinValue : 0,
 		MaxValue : 0,
-		GroupName: "",
 	},
 }
 //-----------------------------------------------------------------------------

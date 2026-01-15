@@ -53,18 +53,19 @@ const (
 	ParamTypePassword ParamType = "password"
 	ParamTypeBool     ParamType = "bool"
 	ParamTypeInt      ParamType = "int"
+	ParamTypeList     ParamType = "list"
 )
 
 //=============================================================================
 
 type ParamDef struct {
 	Name      string      `json:"name"`
-	Type      ParamType   `json:"type"`      // string|int|bool|group|password
+	Type      ParamType   `json:"type"`      // string|int|bool|password|list
 	DefValue  string      `json:"defValue"`
 	Nullable  bool        `json:"nullable"`
 	MinValue  int         `json:"minValue"`
 	MaxValue  int         `json:"maxValue"`
-	GroupName string      `json:"groupName"` // links this param to a group whose type is group
+	Values    []string    `json:"values"`
 }
 
 //-----------------------------------------------------------------------------
@@ -106,7 +107,7 @@ func (p *ParamDef) Validate(values map[string]any) error {
 		slog.Info("Param Type is", "type", t.Name())
 		switch t.Name() {
 			case "string":
-				if p.Type == ParamTypeString || p.Type == ParamTypePassword {
+				if p.Type == ParamTypeString || p.Type == ParamTypePassword || p.Type == ParamTypeList {
 					return nil
 				}
 				break;
@@ -147,22 +148,21 @@ type Info struct {
 
 //=============================================================================
 
-type ConnectionResult int
+type ConnectionResult struct {
+	Status  ContextStatus `json:"status"`
+	Message string        `json:"message"`
+	Url     string        `json:"url"`
+	Params  []*ParamDef   `json:"params"`
+}
 
-const (
-	ConnectionResultError     = -1
-	ConnectionResultConnected =  0
-	ConnectionResultOpenUrl   =  1
-	ConnectionResultProxyUrl  =  2
-)
-
-//-----------------------------------------------------------------------------
+//=============================================================================
 
 type Adapter interface {
 	GetInfo() *Info
 	GetAuthUrl() string
 	Clone(configParams map[string]any, connectParams map[string]any)  Adapter
-	Connect(ctx *ConnectionContext) (ConnectionResult, error)
+	GetConnectParams(configParams map[string]any) []*ParamDef
+	Connect(ctx *ConnectionContext) *ConnectionResult
 	Disconnect(ctx *ConnectionContext) error
 	IsWebLoginCompleted(httpCode int, path string) bool
 	InitFromWebLogin(reqHeader *http.Header, resCookies []*http.Cookie) error
