@@ -27,11 +27,11 @@ package business
 import (
 	"sync"
 
-	"github.com/tradalia/core/auth"
-	"github.com/tradalia/core/datatype"
-	"github.com/tradalia/core/msg"
-	"github.com/tradalia/core/req"
-	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/algotiqa/core/auth"
+	"github.com/algotiqa/core/datatype"
+	"github.com/algotiqa/core/msg"
+	"github.com/algotiqa/core/req"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
 )
 
 //=============================================================================
@@ -52,17 +52,17 @@ func GetConnections(c *auth.Context, filter map[string]any, offset int, limit in
 	defer userConnections.RUnlock()
 
 	us := c.Session
-	uc,found := userConnections.m[us.Username]
+	uc, found := userConnections.m[us.Username]
 
 	var list []*ConnectionInfo
 
 	if found {
 		for _, ctx := range uc.contexts {
 			ci := ConnectionInfo{
-				Username      : ctx.Username,
+				Username:       ctx.Username,
 				ConnectionCode: ctx.ConnectionCode,
-				SystemCode    : ctx.GetAdapterInfo().Code,
-				SystemName    : ctx.GetAdapterInfo().Name,
+				SystemCode:     ctx.GetAdapterInfo().Code,
+				SystemName:     ctx.GetAdapterInfo().Name,
 			}
 			list = append(list, &ci)
 		}
@@ -79,7 +79,7 @@ func GetConnectionsToRefresh() []*adapter.ConnectionContext {
 
 	var list []*adapter.ConnectionContext
 
-	for _,uc := range userConnections.m {
+	for _, uc := range userConnections.m {
 		for _, ctx := range uc.contexts {
 			if ctx.NeedsRefresh() {
 				list = append(list, ctx)
@@ -115,7 +115,7 @@ func Connect(c *auth.Context, connectionCode string, cs *ConnectionSpec) (*adapt
 	defer userConnections.Unlock()
 
 	user := c.Session.Username
-	uc,found := userConnections.m[user]
+	uc, found := userConnections.m[user]
 
 	//--- Add entry if it is the first time
 
@@ -124,29 +124,29 @@ func Connect(c *auth.Context, connectionCode string, cs *ConnectionSpec) (*adapt
 		userConnections.m[user] = uc
 	}
 
-	ctx,found := uc.contexts[connectionCode]
+	ctx, found := uc.contexts[connectionCode]
 	if found {
 		if ctx.IsConnected() {
 			return &adapter.ConnectionResult{
-				Status : adapter.ContextStatusConnected,
+				Status: adapter.ContextStatusConnected,
 			}, nil
 		}
 	}
 
-	ad,ok := adapters[cs.SystemCode]
+	ad, ok := adapters[cs.SystemCode]
 	if !ok {
 		return nil, req.NewNotFoundError("System not found: %v", cs.SystemCode)
 	}
 
 	var err error
-	ctx,err = adapter.NewConnectionContext(c.Session.Username, connectionCode, c.Gin.Request.Host, ad, cs.ConfigValues, cs.ConnectValues)
+	ctx, err = adapter.NewConnectionContext(c.Session.Username, connectionCode, c.Gin.Request.Host, ad, cs.ConfigValues, cs.ConnectValues)
 	if err != nil {
-		return connectError(err),nil
+		return connectError(err), nil
 	}
 
 	res := ctx.Connect()
 	if res.Status == adapter.ContextStatusError {
-		return res,nil
+		return res, nil
 	}
 
 	//--- At this point, status can be either Connected or Connecting
@@ -154,7 +154,7 @@ func Connect(c *auth.Context, connectionCode string, cs *ConnectionSpec) (*adapt
 	if res.Status == adapter.ContextStatusConnected {
 		err = sendConnectionChangeMessage(c, ctx)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 	}
 
@@ -205,10 +205,10 @@ func Disconnect(c *auth.Context, connectionCode string) error {
 //===
 //=============================================================================
 
-func GetRootSymbols(c *auth.Context, connectionCode string, filter string) ([]*adapter.RootSymbol, error){
-	ctx,err := getConnectionContext(c, connectionCode)
+func GetRootSymbols(c *auth.Context, connectionCode string, filter string) ([]*adapter.RootSymbol, error) {
+	ctx, err := getConnectionContext(c, connectionCode)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	return ctx.GetRootSymbols(filter)
@@ -216,10 +216,10 @@ func GetRootSymbols(c *auth.Context, connectionCode string, filter string) ([]*a
 
 //=============================================================================
 
-func GetRootSymbol(c *auth.Context, connectionCode string, root string) (*adapter.RootSymbol, error){
-	ctx,err := getConnectionContext(c, connectionCode)
+func GetRootSymbol(c *auth.Context, connectionCode string, root string) (*adapter.RootSymbol, error) {
+	ctx, err := getConnectionContext(c, connectionCode)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	return ctx.GetRootSymbol(root)
@@ -227,10 +227,10 @@ func GetRootSymbol(c *auth.Context, connectionCode string, root string) (*adapte
 
 //=============================================================================
 
-func GetInstruments(c *auth.Context, connectionCode string, root string) ([]*adapter.Instrument, error){
-	ctx,err := getConnectionContext(c, connectionCode)
+func GetInstruments(c *auth.Context, connectionCode string, root string) ([]*adapter.Instrument, error) {
+	ctx, err := getConnectionContext(c, connectionCode)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	return ctx.GetInstruments(root)
@@ -238,10 +238,10 @@ func GetInstruments(c *auth.Context, connectionCode string, root string) ([]*ada
 
 //=============================================================================
 
-func GetPriceBars(c *auth.Context, connectionCode string, symbol string, date datatype.IntDate) (*adapter.PriceBars, error){
-	ctx,err := getConnectionContext(c, connectionCode)
+func GetPriceBars(c *auth.Context, connectionCode string, symbol string, date datatype.IntDate) (*adapter.PriceBars, error) {
+	ctx, err := getConnectionContext(c, connectionCode)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	return ctx.GetPriceBars(symbol, date)
@@ -249,10 +249,10 @@ func GetPriceBars(c *auth.Context, connectionCode string, symbol string, date da
 
 //=============================================================================
 
-func GetAccounts(c *auth.Context, connectionCode string) ([]*adapter.Account, error){
-	ctx,err := getConnectionContext(c, connectionCode)
+func GetAccounts(c *auth.Context, connectionCode string) ([]*adapter.Account, error) {
+	ctx, err := getConnectionContext(c, connectionCode)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	return ctx.GetAccounts()
@@ -260,32 +260,32 @@ func GetAccounts(c *auth.Context, connectionCode string) ([]*adapter.Account, er
 
 //=============================================================================
 
-func GetOrders(c *auth.Context, connectionCode string) (any, error){
-	return nil,nil
+func GetOrders(c *auth.Context, connectionCode string) (any, error) {
+	return nil, nil
 }
 
 //=============================================================================
 
-func GetPositions(c *auth.Context, connectionCode string) (any, error){
-	return nil,nil
+func GetPositions(c *auth.Context, connectionCode string) (any, error) {
+	return nil, nil
 }
 
 //=============================================================================
 
-func TestAdapter(c *auth.Context, connectionCode string, tar *TestAdapterRequest) (string, error){
+func TestAdapter(c *auth.Context, connectionCode string, tar *TestAdapterRequest) (string, error) {
 	userConnections.RLock()
 
 	user := c.Session.Username
 	uc, ok := userConnections.m[user]
 	if !ok {
 		userConnections.RUnlock()
-		return "",req.NewNotFoundError("Connection not found for user: %v", user)
+		return "", req.NewNotFoundError("Connection not found for user: %v", user)
 	}
 
 	ctx, found := uc.contexts[connectionCode]
 	userConnections.RUnlock()
 	if !found {
-		return "",req.NewNotFoundError("Connection not found: %v", connectionCode)
+		return "", req.NewNotFoundError("Connection not found: %v", connectionCode)
 	}
 
 	return ctx.TestAdapter(tar.Service, tar.Query)
@@ -299,10 +299,10 @@ func TestAdapter(c *auth.Context, connectionCode string, tar *TestAdapterRequest
 
 func sendConnectionChangeMessage(c *auth.Context, ctx *adapter.ConnectionContext) error {
 	ccm := ConnectionChangeSystemMessage{
-		Username      : ctx.Username,
+		Username:       ctx.Username,
 		ConnectionCode: ctx.ConnectionCode,
-		SystemCode    : ctx.GetAdapterInfo().Code,
-		Status        : ctx.GetStatus(),
+		SystemCode:     ctx.GetAdapterInfo().Code,
+		Status:         ctx.GetStatus(),
 	}
 	err := msg.SendMessage(msg.ExSystem, msg.SourceConnection, msg.TypeChange, &ccm)
 
@@ -323,23 +323,23 @@ func getConnectionContext(c *auth.Context, connectionCode string) (*adapter.Conn
 	uc, ok := userConnections.m[user]
 	if !ok {
 		userConnections.RUnlock()
-		return nil,req.NewNotFoundError("Connection not found for user: %v", user)
+		return nil, req.NewNotFoundError("Connection not found for user: %v", user)
 	}
 
 	ctx, found := uc.contexts[connectionCode]
 	userConnections.RUnlock()
 	if !found {
-		return nil,req.NewNotFoundError("Connection not found: %v", connectionCode)
+		return nil, req.NewNotFoundError("Connection not found: %v", connectionCode)
 	}
 
-	return ctx,nil
+	return ctx, nil
 }
 
 //=============================================================================
 
 func connectError(err error) *adapter.ConnectionResult {
 	return &adapter.ConnectionResult{
-		Status : adapter.ContextStatusError,
+		Status:  adapter.ContextStatusError,
 		Message: err.Error(),
 	}
 }

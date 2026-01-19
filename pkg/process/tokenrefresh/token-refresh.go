@@ -25,10 +25,10 @@ THE SOFTWARE.
 package tokenrefresh
 
 import (
-	"github.com/tradalia/core/msg"
-	"github.com/tradalia/system-adapter/pkg/adapter"
-	"github.com/tradalia/system-adapter/pkg/app"
-	"github.com/tradalia/system-adapter/pkg/business"
+	"github.com/algotiqa/core/msg"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
+	"github.com/algotiqa/system-adapter/pkg/app"
+	"github.com/algotiqa/system-adapter/pkg/business"
 	"log/slog"
 	"time"
 )
@@ -73,10 +73,10 @@ func run() {
 
 func sendConnectionChangeMessage(ctx *adapter.ConnectionContext) error {
 	ccm := business.ConnectionChangeSystemMessage{
-		Username      : ctx.Username,
+		Username:       ctx.Username,
 		ConnectionCode: ctx.ConnectionCode,
-		SystemCode    : ctx.GetAdapterInfo().Code,
-		Status        : ctx.GetStatus(),
+		SystemCode:     ctx.GetAdapterInfo().Code,
+		Status:         ctx.GetStatus(),
 	}
 
 	return msg.SendMessage(msg.ExSystem, msg.SourceConnection, msg.TypeChange, &ccm)

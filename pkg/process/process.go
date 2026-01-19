@@ -25,8 +25,8 @@ THE SOFTWARE.
 package process
 
 import (
-	"github.com/tradalia/system-adapter/pkg/app"
-	"github.com/tradalia/system-adapter/pkg/process/tokenrefresh"
+	"github.com/algotiqa/system-adapter/pkg/app"
+	"github.com/algotiqa/system-adapter/pkg/process/tokenrefresh"
 )
 
 //=============================================================================

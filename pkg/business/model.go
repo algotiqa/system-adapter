@@ -27,15 +27,15 @@ package business
 import (
 	"sync"
 
-	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
 )
 
 //=============================================================================
 
 type ConnectionSpec struct {
-	SystemCode     string         `json:"systemCode"     binding:"required"`
-	ConfigValues   map[string]any `json:"configValues"   binding:"required"`
-	ConnectValues  map[string]any `json:"connectValues"  binding:"required"`
+	SystemCode    string         `json:"systemCode"     binding:"required"`
+	ConfigValues  map[string]any `json:"configValues"   binding:"required"`
+	ConnectValues map[string]any `json:"connectValues"  binding:"required"`
 }
 
 //=============================================================================

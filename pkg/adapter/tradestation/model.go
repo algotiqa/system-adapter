@@ -27,7 +27,7 @@ package tradestation
 import (
 	"net/http"
 
-	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
 )
 
 //=============================================================================
@@ -36,8 +36,8 @@ import (
 const (
 	//--- Config params
 
-	ParamAccount      = "account"
-	ParamAuthType     = "authType"
+	ParamAccount  = "account"
+	ParamAuthType = "authType"
 
 	//--- Connection params (authType="browser" )
 
@@ -47,8 +47,8 @@ const (
 
 	//--- List options
 
-	ParamAccountTest  = "test"
-	ParamAccountLive  = "live"
+	ParamAccountTest = "test"
+	ParamAccountLive = "live"
 
 	ParamAuthTypeBrowser  = "browser"
 	ParamAuthTypeInternal = "internal"
@@ -60,8 +60,8 @@ const (
 	LiveAPI = "https://api.tradestation.com"
 	DemoAPI = "https://sim-api.tradestation.com"
 
-	AuthorizeUrl       = "https://signin.tradestation.com/authorize"
-	OauthTokenUrl      = "https://signin.tradestation.com/oauth/token"
+	AuthorizeUrl  = "https://signin.tradestation.com/authorize"
+	OauthTokenUrl = "https://signin.tradestation.com/oauth/token"
 
 	LoginPageUrl       = "https://my.tradestation.com/api/auth/login?returnTo=%2F"
 	LoginPostUrl       = "https://signin.tradestation.com/usernamepassword/login"
@@ -74,96 +74,96 @@ const (
 
 //=============================================================================
 
-var configParams = []*adapter.ParamDef {
+var configParams = []*adapter.ParamDef{
 	{
-		Name     : ParamAccount,
-		Type     : adapter.ParamTypeList,
-		DefValue : ParamAccountTest,
-		Nullable : false,
-		Values   : []string{ ParamAccountTest, ParamAccountLive },
+		Name:     ParamAccount,
+		Type:     adapter.ParamTypeList,
+		DefValue: ParamAccountTest,
+		Nullable: false,
+		Values:   []string{ParamAccountTest, ParamAccountLive},
 	},
 	{
-		Name     : ParamAuthType,
-		Type     : adapter.ParamTypeList,
-		DefValue : ParamAuthTypeBrowser,
-		Nullable : false,
-		Values   : []string{ ParamAuthTypeBrowser, ParamAuthTypeInternal },
-	},
-}
-
-//-----------------------------------------------------------------------------
-
-var connectParamsBrowser = []*adapter.ParamDef {
-	{
-		Name     : ParamClientId,
-		Type     : adapter.ParamTypeString,
-		DefValue : "",
-		Nullable : false,
-		MinValue : 0,
-		MaxValue : 64,
-	},
-	{
-		Name     : ParamClientSecret,
-		Type     : adapter.ParamTypeString,
-		DefValue : "",
-		Nullable : false,
-		MinValue : 0,
-		MaxValue : 64,
+		Name:     ParamAuthType,
+		Type:     adapter.ParamTypeList,
+		DefValue: ParamAuthTypeBrowser,
+		Nullable: false,
+		Values:   []string{ParamAuthTypeBrowser, ParamAuthTypeInternal},
 	},
 }
 
 //-----------------------------------------------------------------------------
 
-var connectParamsInternal = []*adapter.ParamDef {
+var connectParamsBrowser = []*adapter.ParamDef{
 	{
-		Name     : adapter.ParamUsername,
-		Type     : adapter.ParamTypeString,
-		DefValue : "",
-		Nullable : false,
-		MinValue : 0,
-		MaxValue : 64,
+		Name:     ParamClientId,
+		Type:     adapter.ParamTypeString,
+		DefValue: "",
+		Nullable: false,
+		MinValue: 0,
+		MaxValue: 64,
 	},
 	{
-		Name     : adapter.ParamPassword,
-		Type     : adapter.ParamTypePassword,
-		DefValue : "",
-		Nullable : false,
-		MinValue : 0,
-		MaxValue : 64,
-	},
-	{
-		Name     : adapter.ParamTwoFACode,
-		Type     : adapter.ParamTypeString,
-		DefValue : "",
-		Nullable : false,
-		MinValue : 0,
-		MaxValue : 64,
+		Name:     ParamClientSecret,
+		Type:     adapter.ParamTypeString,
+		DefValue: "",
+		Nullable: false,
+		MinValue: 0,
+		MaxValue: 64,
 	},
 }
 
 //-----------------------------------------------------------------------------
 
-var connectParamsCode = []*adapter.ParamDef {
+var connectParamsInternal = []*adapter.ParamDef{
 	{
-		Name     : ParamClientCode,
-		Type     : adapter.ParamTypeString,
-		DefValue : "",
-		Nullable : false,
-		MinValue : 0,
-		MaxValue : 128,
+		Name:     adapter.ParamUsername,
+		Type:     adapter.ParamTypeString,
+		DefValue: "",
+		Nullable: false,
+		MinValue: 0,
+		MaxValue: 64,
+	},
+	{
+		Name:     adapter.ParamPassword,
+		Type:     adapter.ParamTypePassword,
+		DefValue: "",
+		Nullable: false,
+		MinValue: 0,
+		MaxValue: 64,
+	},
+	{
+		Name:     adapter.ParamTwoFACode,
+		Type:     adapter.ParamTypeString,
+		DefValue: "",
+		Nullable: false,
+		MinValue: 0,
+		MaxValue: 64,
+	},
+}
+
+//-----------------------------------------------------------------------------
+
+var connectParamsCode = []*adapter.ParamDef{
+	{
+		Name:     ParamClientCode,
+		Type:     adapter.ParamTypeString,
+		DefValue: "",
+		Nullable: false,
+		MinValue: 0,
+		MaxValue: 128,
 	},
 }
 
 //-----------------------------------------------------------------------------
 
 var info = adapter.Info{
-	Code                : "TS",
-	Name                : "Tradestation",
-	ConfigParams        : configParams,
-	SupportsData        : true,
-	SupportsBroker      : true,
+	Code:                 "TS",
+	Name:                 "Tradestation",
+	ConfigParams:         configParams,
+	SupportsData:         true,
+	SupportsBroker:       true,
 	SupportsMultipleData: false,
-	SupportsInventory   : true,
+	SupportsInventory:    true,
 }
 
 //=============================================================================
@@ -191,10 +191,10 @@ type tradestation struct {
 	connectParams *ConnectParams
 	client        *http.Client
 	header        *http.Header
-	accessToken    string
-	refreshToken   string
-	clientId       string
-	apiUrl         string
+	accessToken   string
+	refreshToken  string
+	clientId      string
+	apiUrl        string
 }
 
 //=============================================================================

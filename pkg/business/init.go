@@ -25,9 +25,10 @@ THE SOFTWARE.
 package business
 
 import (
-	"github.com/tradalia/core/msg"
 	"log/slog"
 	"os"
+
+	"github.com/algotiqa/core/msg"
 )
 
 //=============================================================================

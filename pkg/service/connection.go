@@ -29,12 +29,12 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/algotiqa/core/auth"
+	"github.com/algotiqa/core/datatype"
+	"github.com/algotiqa/core/req"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
+	"github.com/algotiqa/system-adapter/pkg/business"
 	"github.com/gin-gonic/gin"
-	"github.com/tradalia/core/auth"
-	"github.com/tradalia/core/datatype"
-	"github.com/tradalia/core/req"
-	"github.com/tradalia/system-adapter/pkg/adapter"
-	"github.com/tradalia/system-adapter/pkg/business"
 )
 
 //=============================================================================
@@ -56,7 +56,7 @@ func getConnections(c *auth.Context) {
 func connect(c *auth.Context) {
 	code := c.GetCodeFromUrl()
 	spec := business.ConnectionSpec{}
-	err  := c.BindParamsFromBody(&spec)
+	err := c.BindParamsFromBody(&spec)
 
 	if err == nil {
 		var res *adapter.ConnectionResult
@@ -74,7 +74,7 @@ func connect(c *auth.Context) {
 
 func disconnect(c *auth.Context) {
 	code := c.GetCodeFromUrl()
-	err  := business.Disconnect(c, code)
+	err := business.Disconnect(c, code)
 
 	if err == nil {
 		return
@@ -90,28 +90,28 @@ func webLogin(c *gin.Context) {
 
 	ctx := business.GetConnectionContextByInstanceCode(code)
 	if ctx == nil {
-		req.ReturnError(c, req.NewBadRequestError("Connection context not found : "+ code))
+		req.ReturnError(c, req.NewBadRequestError("Connection context not found : "+code))
 		return
 	}
 
 	authUrl := ctx.GetAdapterAuthUrl()
 	target, err := url.Parse(authUrl)
 	if err != nil {
-		req.ReturnError(c, req.NewBadRequestError("Bad authentication url : "+ authUrl))
+		req.ReturnError(c, req.NewBadRequestError("Bad authentication url : "+authUrl))
 		return
 	}
 
 	c.SetCookie(InstanceCode, code, 0, "", "", true, true)
 
 	location := target.Path
-	slog.Info("Redirecting initial request to : "+location)
+	slog.Info("Redirecting initial request to : " + location)
 	c.Redirect(http.StatusFound, location)
 }
 
 //=============================================================================
 
 func getRootSymbols(c *auth.Context) {
-	code   := c.GetCodeFromUrl()
+	code := c.GetCodeFromUrl()
 	filter := c.Gin.Query("filter")
 	if filter == "" {
 		c.ReturnError(req.NewBadRequestError("No filter provided"))
@@ -129,8 +129,8 @@ func getRootSymbols(c *auth.Context) {
 //=============================================================================
 
 func getRootSymbol(c *auth.Context) {
-	code   := c.GetCodeFromUrl()
-	root   := c.Gin.Param("root")
+	code := c.GetCodeFromUrl()
+	root := c.Gin.Param("root")
 
 	res, err := business.GetRootSymbol(c, code, root)
 	if err == nil {
@@ -159,11 +159,11 @@ func getInstruments(c *auth.Context) {
 //=============================================================================
 
 func getPriceBars(c *auth.Context) {
-	code  := c.GetCodeFromUrl()
-	symbol:= c.Gin.Param("symbol")
-	date  := c.Gin.Query("date")
+	code := c.GetCodeFromUrl()
+	symbol := c.Gin.Param("symbol")
+	date := c.Gin.Query("date")
 
-	id,err := datatype.ParseIntDate(date, true)
+	id, err := datatype.ParseIntDate(date, true)
 
 	if err != nil {
 		c.ReturnError(req.NewBadRequestError("Missing or invalid 'date' parameter"))
@@ -225,8 +225,8 @@ func getPositions(c *auth.Context) {
 
 func testAdapter(c *auth.Context) {
 	code := c.GetCodeFromUrl()
-	tar  := business.TestAdapterRequest{}
-	err  := c.BindParamsFromBody(&tar)
+	tar := business.TestAdapterRequest{}
+	err := c.BindParamsFromBody(&tar)
 
 	if err == nil {
 		var res string

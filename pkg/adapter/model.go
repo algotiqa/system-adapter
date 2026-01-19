@@ -32,16 +32,16 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/tradalia/core/datatype"
+	"github.com/algotiqa/core/datatype"
 )
 
 //=============================================================================
 //=== Common connection parameters
 
 const (
-	ParamUsername = "username"
-	ParamPassword = "password"
-	ParamTwoFACode= "twoFACode"
+	ParamUsername  = "username"
+	ParamPassword  = "password"
+	ParamTwoFACode = "twoFACode"
 )
 
 //=============================================================================
@@ -59,46 +59,46 @@ const (
 //=============================================================================
 
 type ParamDef struct {
-	Name      string      `json:"name"`
-	Type      ParamType   `json:"type"`      // string|int|bool|password|list
-	DefValue  string      `json:"defValue"`
-	Nullable  bool        `json:"nullable"`
-	MinValue  int         `json:"minValue"`
-	MaxValue  int         `json:"maxValue"`
-	Values    []string    `json:"values"`
+	Name     string    `json:"name"`
+	Type     ParamType `json:"type"` // string|int|bool|password|list
+	DefValue string    `json:"defValue"`
+	Nullable bool      `json:"nullable"`
+	MinValue int       `json:"minValue"`
+	MaxValue int       `json:"maxValue"`
+	Values   []string  `json:"values"`
 }
 
 //-----------------------------------------------------------------------------
 
 func (p *ParamDef) Validate(values map[string]any) error {
-	value,ok := values[p.Name]
+	value, ok := values[p.Name]
 
 	if !ok {
 		//--- Check default value
 
 		if p.DefValue != "" {
 			switch p.Type {
-				case ParamTypeBool:
-					if p.DefValue != "true" && p.DefValue != "false" {
-						return errors.New("invalid default value for a boolean parameter : "+ p.Name)
-					}
-					break;
+			case ParamTypeBool:
+				if p.DefValue != "true" && p.DefValue != "false" {
+					return errors.New("invalid default value for a boolean parameter : " + p.Name)
+				}
+				break
 
-				case ParamTypeInt:
-					v, err := strconv.Atoi(p.DefValue)
-					if err != nil {
-						return errors.New("invalid value for an integer parameter : "+ p.Name)
-					}
-					if v<p.MinValue || v>p.MaxValue {
-						return errors.New("invalid range for this integer parameter : "+ p.Name)
-					}
-					break;
+			case ParamTypeInt:
+				v, err := strconv.Atoi(p.DefValue)
+				if err != nil {
+					return errors.New("invalid value for an integer parameter : " + p.Name)
+				}
+				if v < p.MinValue || v > p.MaxValue {
+					return errors.New("invalid range for this integer parameter : " + p.Name)
+				}
+				break
 			}
 			return nil
 		}
 
 		if !p.Nullable {
-			return errors.New("missing mandatory value for parameter : "+ p.Name)
+			return errors.New("missing mandatory value for parameter : " + p.Name)
 		}
 	} else {
 		//--- Check provided value
@@ -106,28 +106,28 @@ func (p *ParamDef) Validate(values map[string]any) error {
 		t := reflect.TypeOf(value)
 		slog.Info("Param Type is", "type", t.Name())
 		switch t.Name() {
-			case "string":
-				if p.Type == ParamTypeString || p.Type == ParamTypePassword || p.Type == ParamTypeList {
-					return nil
-				}
-				break;
+		case "string":
+			if p.Type == ParamTypeString || p.Type == ParamTypePassword || p.Type == ParamTypeList {
+				return nil
+			}
+			break
 
-			case "bool":
-				if p.Type == ParamTypeBool {
-					return nil
-				}
-				break;
+		case "bool":
+			if p.Type == ParamTypeBool {
+				return nil
+			}
+			break
 
-			case "int":
-				if p.Type == ParamTypeInt {
-					return nil
-				}
+		case "int":
+			if p.Type == ParamTypeInt {
+				return nil
+			}
 
-			default:
-				return errors.New("unknown parameter type : "+ p.Name)
+		default:
+			return errors.New("unknown parameter type : " + p.Name)
 		}
 
-		return errors.New("invalid parameter value : "+ p.Name)
+		return errors.New("invalid parameter value : " + p.Name)
 	}
 
 	return nil
@@ -136,14 +136,14 @@ func (p *ParamDef) Validate(values map[string]any) error {
 //=============================================================================
 
 type Info struct {
-	Code                 string       `json:"code"`
-	Name                 string       `json:"name"`
-	SupportsData         bool         `json:"supportsData"`
-	SupportsBroker       bool         `json:"supportsBroker"`
-	SupportsMultipleData bool         `json:"supportsMultipleData"`
-	SupportsInventory    bool         `json:"supportsInventory"`
-	ConfigParams         []*ParamDef  `json:"configParams"`
-	ConnectParams        []*ParamDef  `json:"connectParams"`
+	Code                 string      `json:"code"`
+	Name                 string      `json:"name"`
+	SupportsData         bool        `json:"supportsData"`
+	SupportsBroker       bool        `json:"supportsBroker"`
+	SupportsMultipleData bool        `json:"supportsMultipleData"`
+	SupportsInventory    bool        `json:"supportsInventory"`
+	ConfigParams         []*ParamDef `json:"configParams"`
+	ConnectParams        []*ParamDef `json:"connectParams"`
 }
 
 //=============================================================================
@@ -160,7 +160,7 @@ type ConnectionResult struct {
 type Adapter interface {
 	GetInfo() *Info
 	GetAuthUrl() string
-	Clone(configParams map[string]any, connectParams map[string]any)  Adapter
+	Clone(configParams map[string]any, connectParams map[string]any) Adapter
 	GetConnectParams(configParams map[string]any) []*ParamDef
 	Connect(ctx *ConnectionContext) *ConnectionResult
 	Disconnect(ctx *ConnectionContext) error
@@ -171,14 +171,14 @@ type Adapter interface {
 
 	//--- Services
 
-	GetRootSymbols(filter string) ([]*RootSymbol,error)
-	GetRootSymbol(root string) (*RootSymbol,error)
-	GetInstruments(root string) ([]*Instrument,error)
-	GetPriceBars(symbol string, date datatype.IntDate) (*PriceBars,error)
-	GetAccounts() ([]*Account,error)
-	GetOrders() (any,error)
-	GetPositions() (any,error)
-	TestService(path,param string) (string,error)
+	GetRootSymbols(filter string) ([]*RootSymbol, error)
+	GetRootSymbol(root string) (*RootSymbol, error)
+	GetInstruments(root string) ([]*Instrument, error)
+	GetPriceBars(symbol string, date datatype.IntDate) (*PriceBars, error)
+	GetAccounts() ([]*Account, error)
+	GetOrders() (any, error)
+	GetPositions() (any, error)
+	TestService(path, param string) (string, error)
 }
 
 //=============================================================================
@@ -188,6 +188,7 @@ type Adapter interface {
 //=============================================================================
 
 type AccountType int
+
 const (
 	AccountTypeFutures = 0
 	AccountTypeCrypto  = 1
@@ -211,28 +212,28 @@ type Account struct {
 //=============================================================================
 
 type Instrument struct {
-	Name            string     `json:"name"`
-	Description     string     `json:"description"`
-	Exchange        string     `json:"exchange"`
-	Country         string     `json:"country"`
-	Root            string     `json:"root"`
-	ExpirationDate  *time.Time `json:"expirationDate"`
-	PointValue      int        `json:"pointValue"`
-	MinMove         float64    `json:"minMove"`
-	Continuous      bool       `json:"continuous"`
-	Month           string     `json:"month"`
+	Name           string     `json:"name"`
+	Description    string     `json:"description"`
+	Exchange       string     `json:"exchange"`
+	Country        string     `json:"country"`
+	Root           string     `json:"root"`
+	ExpirationDate *time.Time `json:"expirationDate"`
+	PointValue     int        `json:"pointValue"`
+	MinMove        float64    `json:"minMove"`
+	Continuous     bool       `json:"continuous"`
+	Month          string     `json:"month"`
 }
 
 //=============================================================================
 
 type RootSymbol struct {
-	Code        string  `json:"code"`
-	Instrument  string  `json:"instrument"`
-	Exchange    string  `json:"exchange"`
-	PointValue  float64 `json:"pointValue"`
-	Increment   float64 `json:"increment"`
-	Country     string  `json:"country"`
-	Currency    string  `json:"currency"`
+	Code       string  `json:"code"`
+	Instrument string  `json:"instrument"`
+	Exchange   string  `json:"exchange"`
+	PointValue float64 `json:"pointValue"`
+	Increment  float64 `json:"increment"`
+	Country    string  `json:"country"`
+	Currency   string  `json:"currency"`
 }
 
 //=============================================================================

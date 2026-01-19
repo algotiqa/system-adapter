@@ -40,9 +40,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tradalia/core/datatype"
-	"github.com/tradalia/core/req"
-	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/algotiqa/core/datatype"
+	"github.com/algotiqa/core/req"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
 )
 
 //=============================================================================
@@ -67,7 +67,7 @@ func (a *tradestation) GetAuthUrl() string {
 
 func (a *tradestation) Clone(configParams map[string]any, connectParams map[string]any) adapter.Adapter {
 	b := *a
-	b.configParams  = retrieveConfigParams (configParams)
+	b.configParams = retrieveConfigParams(configParams)
 	b.connectParams = retrieveConnectParams(connectParams)
 	return &b
 }
@@ -86,14 +86,13 @@ func (a *tradestation) GetConnectParams(configParams map[string]any) []*adapter.
 //=============================================================================
 
 func (a *tradestation) Connect(ctx *adapter.ConnectionContext) *adapter.ConnectionResult {
-	jar,_:= cookiejar.New(nil)
+	jar, _ := cookiejar.New(nil)
 
 	a.client = &http.Client{
-		Jar: jar,
+		Jar:     jar,
 		Timeout: time.Minute * 3,
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-			},
+			TLSClientConfig: &tls.Config{},
 		},
 	}
 
@@ -125,7 +124,7 @@ func (a *tradestation) InitFromWebLogin(reqHeader *http.Header, resCookies []*ht
 //=============================================================================
 
 func (a *tradestation) GetTokenExpSeconds() int {
-	return 20*60;
+	return 20 * 60
 }
 
 //=============================================================================
@@ -144,11 +143,11 @@ func (a *tradestation) RefreshToken() error {
 //===
 //=============================================================================
 
-func (a *tradestation) GetRootSymbols(filter string) ([]*adapter.RootSymbol,error) {
+func (a *tradestation) GetRootSymbols(filter string) ([]*adapter.RootSymbol, error) {
 	//--- Category=FU   (Category=Futures)
 	//--- $top=1000     (returns first 1000 results)
 
-	apiUrl := a.apiUrl + UrlSymbolsSuggest +"/"+ filter +"?$filter=Category%20eq%20%27FU%27&$top=1000"
+	apiUrl := a.apiUrl + UrlSymbolsSuggest + "/" + filter + "?$filter=Category%20eq%20%27FU%27&$top=1000"
 
 	var res []RootFound
 	err := a.doGet(apiUrl, &res)
@@ -158,15 +157,15 @@ func (a *tradestation) GetRootSymbols(filter string) ([]*adapter.RootSymbol,erro
 
 	var rootsMap = make(map[string]*adapter.RootSymbol)
 
-	for _,rf := range res {
-		r,ok := rootsMap[rf.Root]
+	for _, rf := range res {
+		r, ok := rootsMap[rf.Root]
 		if !ok {
 			r = &adapter.RootSymbol{
-				Code      : rf.Root,
+				Code:       rf.Root,
 				Instrument: rf.Description,
-				Country   : rf.Country,
-				Currency  : rf.Currency,
-				Exchange  : rf.Exchange,
+				Country:    rf.Country,
+				Currency:   rf.Currency,
+				Exchange:   rf.Exchange,
 				PointValue: rf.PointValue,
 			}
 
@@ -179,8 +178,8 @@ func (a *tradestation) GetRootSymbols(filter string) ([]*adapter.RootSymbol,erro
 
 //=============================================================================
 
-func (a *tradestation) GetRootSymbol(root string) (*adapter.RootSymbol,error) {
-	apiUrl := a.apiUrl + UrlMarketDataSymbols +"/"+ buildInstrumentList(root)
+func (a *tradestation) GetRootSymbol(root string) (*adapter.RootSymbol, error) {
+	apiUrl := a.apiUrl + UrlMarketDataSymbols + "/" + buildInstrumentList(root)
 
 	var res SymbolDetailsResponse
 	err := a.doGet(apiUrl, &res)
@@ -188,19 +187,19 @@ func (a *tradestation) GetRootSymbol(root string) (*adapter.RootSymbol,error) {
 		return nil, err
 	}
 
-	for _,sd := range res.Symbols {
+	for _, sd := range res.Symbols {
 		if sd.AssetType == "FUTURE" {
 			rs := &adapter.RootSymbol{
-				Code      : sd.Root,
+				Code:       sd.Root,
 				Instrument: sd.Description,
-				Exchange  : sd.Exchange,
+				Exchange:   sd.Exchange,
 				PointValue: toFloat64(sd.PriceFormat.PointValue),
-				Increment : toFloat64(sd.PriceFormat.Increment),
-				Country   : sd.Country,
-				Currency  : sd.Currency,
+				Increment:  toFloat64(sd.PriceFormat.Increment),
+				Country:    sd.Country,
+				Currency:   sd.Currency,
 			}
 
-			return rs,nil
+			return rs, nil
 		}
 	}
 
@@ -209,12 +208,12 @@ func (a *tradestation) GetRootSymbol(root string) (*adapter.RootSymbol,error) {
 
 //=============================================================================
 
-func (a *tradestation) GetInstruments(root string) ([]*adapter.Instrument,error) {
+func (a *tradestation) GetInstruments(root string) ([]*adapter.Instrument, error) {
 	//--- C=FU     (Category=Futures)
 	//--- Exp=true (shows all synbols, expired or not)
 	//--- R=xxx    (root symbol)
 
-	apiUrl := a.apiUrl + UrlSymbolsSearch +"/C=FU&Exp=true&R="+root
+	apiUrl := a.apiUrl + UrlSymbolsSearch + "/C=FU&Exp=true&R=" + root
 
 	var res []SymbolFound
 	err := a.doGet(apiUrl, &res)
@@ -224,24 +223,24 @@ func (a *tradestation) GetInstruments(root string) ([]*adapter.Instrument,error)
 
 	var instruments []*adapter.Instrument
 
-	for _,sf := range res {
+	for _, sf := range res {
 		if sf.Category == "Future" {
-			expDate,err := convertExpirationDate(sf.ExpirationDate)
+			expDate, err := convertExpirationDate(sf.ExpirationDate)
 			if err != nil {
 				return nil, req.NewServerErrorByError(err)
 			}
 
 			i := adapter.Instrument{
-				Name          : sf.Name,
-				Description   : sf.Description,
-				Exchange      : sf.Exchange,
-				Country       : sf.Country,
-				Root          : sf.Root,
+				Name:           sf.Name,
+				Description:    sf.Description,
+				Exchange:       sf.Exchange,
+				Country:        sf.Country,
+				Root:           sf.Root,
 				ExpirationDate: expDate,
-				PointValue    : sf.PointValue,
-				MinMove       : sf.MinMove,
-				Continuous    : sf.Name[0:1]=="@",
-				Month         : extractMonth(sf.Name),
+				PointValue:     sf.PointValue,
+				MinMove:        sf.MinMove,
+				Continuous:     sf.Name[0:1] == "@",
+				Month:          extractMonth(sf.Name),
 			}
 
 			//--- Tradestation reports very future contracts (like 2036) without an expiration date.
@@ -253,8 +252,8 @@ func (a *tradestation) GetInstruments(root string) ([]*adapter.Instrument,error)
 
 			isRecent := i.ExpirationDate != nil && i.ExpirationDate.Year() >= 2006
 
-			if  hasExpDate && isRecent {
-				instruments = append(instruments,&i)
+			if hasExpDate && isRecent {
+				instruments = append(instruments, &i)
 			}
 		}
 	}
@@ -264,18 +263,18 @@ func (a *tradestation) GetInstruments(root string) ([]*adapter.Instrument,error)
 
 //=============================================================================
 
-func (a *tradestation) GetPriceBars(symbol string, date datatype.IntDate) (*adapter.PriceBars,error) {
+func (a *tradestation) GetPriceBars(symbol string, date datatype.IntDate) (*adapter.PriceBars, error) {
 	//--- Last time set to 23:59:50 (and not 59) as it seems that Tradestation somethimes returns 1 extra bar
-	query := "unit=minute&interval=1&firstdate="+ date.String() +"T00%3A00%3A00Z&lastdate="+ date.String() +"T23%3A59%3A00Z"
-	apiUrl := a.apiUrl + UrlMarketDataBarcharts +"/"+ symbol +"?"+ query
+	query := "unit=minute&interval=1&firstdate=" + date.String() + "T00%3A00%3A00Z&lastdate=" + date.String() + "T23%3A59%3A00Z"
+	apiUrl := a.apiUrl + UrlMarketDataBarcharts + "/" + symbol + "?" + query
 
 	priceBars := adapter.PriceBars{
 		Symbol: symbol,
-		Date  : int(date),
+		Date:   int(date),
 	}
 
 	var res BarchartsResponse
-	rres,err := a.doGetWithResponse(apiUrl)
+	rres, err := a.doGetWithResponse(apiUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -299,17 +298,17 @@ func (a *tradestation) GetPriceBars(symbol string, date datatype.IntDate) (*adap
 		return nil, err
 	}
 
-	for _,bar := range res.Bars {
+	for _, bar := range res.Bars {
 		pb := adapter.PriceBar{
-			TimeStamp   : time.UnixMilli(bar.Epoch),
-			High        : toFloat64(bar.High),
-			Low         : toFloat64(bar.Low),
-			Open        : toFloat64(bar.Open),
-			Close       : toFloat64(bar.Close),
-			UpVolume    : bar.UpVolume,
-			DownVolume  : bar.DownVolume,
-			UpTicks     : bar.UpTicks,
-			DownTicks   : bar.DownTicks,
+			TimeStamp:    time.UnixMilli(bar.Epoch),
+			High:         toFloat64(bar.High),
+			Low:          toFloat64(bar.Low),
+			Open:         toFloat64(bar.Open),
+			Close:        toFloat64(bar.Close),
+			UpVolume:     bar.UpVolume,
+			DownVolume:   bar.DownVolume,
+			UpTicks:      bar.UpTicks,
+			DownTicks:    bar.DownTicks,
 			OpenInterest: toInt(bar.OpenInterest),
 		}
 
@@ -321,7 +320,7 @@ func (a *tradestation) GetPriceBars(symbol string, date datatype.IntDate) (*adap
 
 //=============================================================================
 
-func (a *tradestation) GetAccounts() ([]*adapter.Account,error) {
+func (a *tradestation) GetAccounts() ([]*adapter.Account, error) {
 	apiUrl := a.apiUrl + UrlBrokerageAccounts
 
 	var res AccountsResponse
@@ -332,8 +331,8 @@ func (a *tradestation) GetAccounts() ([]*adapter.Account,error) {
 
 	accounts := convertAccounts(&res)
 
-	for _,acc := range accounts {
-		apiUrl = a.apiUrl + UrlBrokerageAccounts +"/"+ acc.Code +"/balances"
+	for _, acc := range accounts {
+		apiUrl = a.apiUrl + UrlBrokerageAccounts + "/" + acc.Code + "/balances"
 		var bres BalancesResponse
 		err = a.doGet(apiUrl, &bres)
 		if err != nil {
@@ -341,37 +340,37 @@ func (a *tradestation) GetAccounts() ([]*adapter.Account,error) {
 		}
 
 		if len(bres.Balances) != 1 {
-			return nil, errors.New(fmt.Sprintf("Incorrect number of balances returned: %d",len(bres.Balances)))
+			return nil, errors.New(fmt.Sprintf("Incorrect number of balances returned: %d", len(bres.Balances)))
 		}
 
 		b := bres.Balances[0]
-		acc.CashBalance          = toFloat64(b.CashBalance)
-		acc.Equity               = toFloat64(b.Equity)
-		acc.RealizedProfitLoss   = toFloat64(b.BalanceDetail.RealizedProfitLoss)
+		acc.CashBalance = toFloat64(b.CashBalance)
+		acc.Equity = toFloat64(b.Equity)
+		acc.RealizedProfitLoss = toFloat64(b.BalanceDetail.RealizedProfitLoss)
 		acc.UnrealizedProfitLoss = toFloat64(b.BalanceDetail.UnrealizedProfitLoss)
-		acc.OpenOrderMargin      = toFloat64(b.BalanceDetail.OpenOrderMargin)
-		acc.InitialMargin        = toFloat64(b.BalanceDetail.InitialMargin)
-		acc.MaintenanceMargin    = toFloat64(b.BalanceDetail.MaintenanceMargin)
+		acc.OpenOrderMargin = toFloat64(b.BalanceDetail.OpenOrderMargin)
+		acc.InitialMargin = toFloat64(b.BalanceDetail.InitialMargin)
+		acc.MaintenanceMargin = toFloat64(b.BalanceDetail.MaintenanceMargin)
 	}
 
-	return accounts,nil
+	return accounts, nil
 }
 
 //=============================================================================
 
-func (a *tradestation) GetOrders() (any,error) {
+func (a *tradestation) GetOrders() (any, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *tradestation) GetPositions() (any,error) {
+func (a *tradestation) GetPositions() (any, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *tradestation) TestService(path,param string) (string,error) {
+func (a *tradestation) TestService(path, param string) (string, error) {
 	slog.Info("TestService: Testing service", "path", path, "param", param)
 	url := a.apiUrl + path
 	if param != "" {
@@ -381,15 +380,15 @@ func (a *tradestation) TestService(path,param string) (string,error) {
 	rq, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		slog.Error("Error creating a GET request", "error", err.Error())
-		return "",err
+		return "", err
 	}
 
-	rq.Header.Set("Authorization", "Bearer "+ a.accessToken)
+	rq.Header.Set("Authorization", "Bearer "+a.accessToken)
 	rq.Header.Set("Content-Type", "application/json")
 
 	res, err := a.client.Do(rq)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 
 	defer res.Body.Close()
@@ -397,7 +396,7 @@ func (a *tradestation) TestService(path,param string) (string,error) {
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		slog.Error("TestService: Error reading response", "path", path, "param", param, "error", err.Error())
-		return "",err
+		return "", err
 	}
 
 	return string(body), nil
@@ -420,10 +419,10 @@ func (a *tradestation) doGetWithResponse(url string) (*http.Response, error) {
 	rq, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		slog.Error("Error creating a GET request", "error", err.Error())
-		return nil,err
+		return nil, err
 	}
 
-	rq.Header.Set("Authorization", "Bearer "+ a.accessToken)
+	rq.Header.Set("Authorization", "Bearer "+a.accessToken)
 	rq.Header.Set("Content-Type", "application/json")
 
 	return a.client.Do(rq)
@@ -446,7 +445,7 @@ func (a *tradestation) doPost(url string, params any, output any) error {
 		return err
 	}
 
-	rq.Header.Set("Authorization", "Bearer "+ a.accessToken)
+	rq.Header.Set("Authorization", "Bearer "+a.accessToken)
 	rq.Header.Set("Content-Type", "application/json")
 
 	res, err := a.client.Do(rq)
@@ -471,11 +470,11 @@ func (a *tradestation) setupAPIUrl() {
 func convertAccounts(ar *AccountsResponse) []*adapter.Account {
 	var list []*adapter.Account
 
-	for _,acc := range ar.Accounts {
+	for _, acc := range ar.Accounts {
 		if acc.AccountType == "Futures" && acc.Status == "Active" {
 			var aa adapter.Account
-			aa.Code         = acc.AccountID
-			aa.Type         = adapter.AccountTypeFutures
+			aa.Code = acc.AccountID
+			aa.Type = adapter.AccountTypeFutures
 			aa.CurrencyCode = acc.Currency
 
 			list = append(list, &aa)
@@ -511,25 +510,25 @@ func toInt(value string) int {
 
 //=============================================================================
 
-func convertExpirationDate(date string) (*time.Time,error) {
+func convertExpirationDate(date string) (*time.Time, error) {
 	fIdx := strings.Index(date, "(")
 	lIdx := strings.Index(date, ")")
 
 	if fIdx == -1 || lIdx == -1 {
-		return nil,errors.New("Invalid expiration date : "+ date)
+		return nil, errors.New("Invalid expiration date : " + date)
 	}
 
 	date = date[fIdx+1 : lIdx]
-	ts,err := strconv.ParseInt(date, 10, 64)
+	ts, err := strconv.ParseInt(date, 10, 64)
 	if err != nil {
-		return nil,errors.New("Invalid expiration date : "+ date)
+		return nil, errors.New("Invalid expiration date : " + date)
 	}
 
 	if ts < 0 {
-		return nil,nil
+		return nil, nil
 	}
 
-	res  := time.UnixMilli(ts)
+	res := time.UnixMilli(ts)
 	return &res, nil
 }
 
@@ -538,31 +537,31 @@ func convertExpirationDate(date string) (*time.Time,error) {
 func buildInstrumentList(root string) string {
 	year := strconv.Itoa(time.Now().Year() % 100)
 
-	return "@"+root+
-			","+root +"F"+year+
-			","+root +"G"+year+
-			","+root +"H"+year+
-			","+root +"J"+year+
-			","+root +"K"+year+
-			","+root +"M"+year+
-			","+root +"N"+year+
-			","+root +"Q"+year+
-			","+root +"U"+year+
-			","+root +"V"+year+
-			","+root +"X"+year+
-			","+root +"Z"+year
+	return "@" + root +
+		"," + root + "F" + year +
+		"," + root + "G" + year +
+		"," + root + "H" + year +
+		"," + root + "J" + year +
+		"," + root + "K" + year +
+		"," + root + "M" + year +
+		"," + root + "N" + year +
+		"," + root + "Q" + year +
+		"," + root + "U" + year +
+		"," + root + "V" + year +
+		"," + root + "X" + year +
+		"," + root + "Z" + year
 }
 
 //=============================================================================
 
 func extractMonth(symbol string) string {
 	size := len(symbol)
-	if size <4 {
+	if size < 4 {
 		return ""
 	}
 
 	year := symbol[size-2 : size]
-	_,err := strconv.Atoi(year)
+	_, err := strconv.Atoi(year)
 	if err != nil {
 		return ""
 	}

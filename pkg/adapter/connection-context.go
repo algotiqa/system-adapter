@@ -31,7 +31,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tradalia/core/datatype"
+	"github.com/algotiqa/core/datatype"
 )
 
 //=============================================================================
@@ -51,18 +51,18 @@ type ContextStatus int
 
 const (
 	ContextStatusError        = -1
-	ContextStatusDisconnected =  0
-	ContextStatusConnecting   =  1
-	ContextStatusConnected    =  2
+	ContextStatusDisconnected = 0
+	ContextStatusConnecting   = 1
+	ContextStatusConnected    = 2
 )
 
 //=============================================================================
 
 type ConnectionContext struct {
-	Username        string
-	ConnectionCode  string
-	Host            string
-	ConnectedSince  time.Time
+	Username       string
+	ConnectionCode string
+	Host           string
+	ConnectedSince time.Time
 	//-------------------------------
 	status          ContextStatus
 	lastRefreshTime time.Time
@@ -73,7 +73,7 @@ type ConnectionContext struct {
 
 //=============================================================================
 
-func NewConnectionContext(username string, connectionCode string, host string, a Adapter, configValues, connectValues map[string]any) (*ConnectionContext,error) {
+func NewConnectionContext(username string, connectionCode string, host string, a Adapter, configValues, connectValues map[string]any) (*ConnectionContext, error) {
 	err := validateParameters(a.GetInfo().ConfigParams, configValues)
 	if err != nil {
 		return nil, err
@@ -85,13 +85,13 @@ func NewConnectionContext(username string, connectionCode string, host string, a
 	}
 
 	return &ConnectionContext{
-		Username      : username,
+		Username:       username,
 		ConnectionCode: connectionCode,
-		Host          : host,
-		adapter       : a.Clone(configValues, connectValues),
-		status        : ContextStatusDisconnected,
+		Host:           host,
+		adapter:        a.Clone(configValues, connectValues),
+		status:         ContextStatusDisconnected,
 		refreshRetries: RefreshRetries,
-	},nil
+	}, nil
 }
 
 //=============================================================================
@@ -137,7 +137,7 @@ func (cc *ConnectionContext) Connect() *ConnectionResult {
 	cc.status = cr.Status
 
 	if cr.Status == ContextStatusConnected {
-		cc.ConnectedSince  = time.Now()
+		cc.ConnectedSince = time.Now()
 		cc.lastRefreshTime = cc.ConnectedSince
 	}
 
@@ -157,13 +157,13 @@ func (cc *ConnectionContext) NeedsRefresh() bool {
 	now := time.Now()
 	sec := cc.adapter.GetTokenExpSeconds()
 
-	if sec == 0 || !cc.IsConnected(){
+	if sec == 0 || !cc.IsConnected() {
 		return false
 	}
 
 	//--- We remove the last 2 mins to allow a few retries and to avoid to be borderline
 	if sec >= 150 {
-		sec -= 2*60
+		sec -= 2 * 60
 	}
 
 	delta := int(now.Sub(cc.lastRefreshTime) / time.Second)
@@ -197,7 +197,7 @@ func (cc *ConnectionContext) RefreshToken() error {
 
 	if err == nil {
 		cc.lastRefreshTime = time.Now()
-		cc.refreshRetries  = RefreshRetries
+		cc.refreshRetries = RefreshRetries
 	} else {
 		cc.refreshRetries--
 		if cc.refreshRetries > 0 {
@@ -213,7 +213,7 @@ func (cc *ConnectionContext) RefreshToken() error {
 
 //=============================================================================
 
-func (cc *ConnectionContext) GetRootSymbols(filter string) ([]*RootSymbol,error) {
+func (cc *ConnectionContext) GetRootSymbols(filter string) ([]*RootSymbol, error) {
 	cc.RLock()
 	defer cc.RUnlock()
 
@@ -222,7 +222,7 @@ func (cc *ConnectionContext) GetRootSymbols(filter string) ([]*RootSymbol,error)
 
 //=============================================================================
 
-func (cc *ConnectionContext) GetRootSymbol(root string) (*RootSymbol,error) {
+func (cc *ConnectionContext) GetRootSymbol(root string) (*RootSymbol, error) {
 	cc.RLock()
 	defer cc.RUnlock()
 
@@ -231,7 +231,7 @@ func (cc *ConnectionContext) GetRootSymbol(root string) (*RootSymbol,error) {
 
 //=============================================================================
 
-func (cc *ConnectionContext) GetInstruments(root string) ([]*Instrument,error) {
+func (cc *ConnectionContext) GetInstruments(root string) ([]*Instrument, error) {
 	cc.RLock()
 	defer cc.RUnlock()
 
@@ -240,31 +240,31 @@ func (cc *ConnectionContext) GetInstruments(root string) ([]*Instrument,error) {
 
 //=============================================================================
 
-func (cc *ConnectionContext) GetPriceBars(symbol string, date datatype.IntDate) (*PriceBars,error) {
+func (cc *ConnectionContext) GetPriceBars(symbol string, date datatype.IntDate) (*PriceBars, error) {
 	cc.RLock()
 	defer cc.RUnlock()
 
 	counter := 0
 
 	for {
-		pc,err := cc.adapter.GetPriceBars(symbol, date)
+		pc, err := cc.adapter.GetPriceBars(symbol, date)
 
 		if err != nil || !pc.Timeout {
-			return pc,err
+			return pc, err
 		}
 
 		counter++
 		slog.Warn("GetPriceBars: Got timeout from adapter", "adapter", cc.adapter.GetInfo().Name, "counter", counter)
 
 		if counter == PriceBarsRetries {
-			return nil,errors.New("Maximum number of retries exceeded: "+ cc.adapter.GetInfo().Name)
+			return nil, errors.New("Maximum number of retries exceeded: " + cc.adapter.GetInfo().Name)
 		}
 	}
 }
 
 //=============================================================================
 
-func (cc *ConnectionContext) GetAccounts() ([]*Account,error) {
+func (cc *ConnectionContext) GetAccounts() ([]*Account, error) {
 	cc.RLock()
 	defer cc.RUnlock()
 
@@ -273,7 +273,7 @@ func (cc *ConnectionContext) GetAccounts() ([]*Account,error) {
 
 //=============================================================================
 
-func (cc *ConnectionContext) GetOrders() (any,error) {
+func (cc *ConnectionContext) GetOrders() (any, error) {
 	cc.RLock()
 	defer cc.RUnlock()
 
@@ -282,7 +282,7 @@ func (cc *ConnectionContext) GetOrders() (any,error) {
 
 //=============================================================================
 
-func (cc *ConnectionContext) GetPositions() (any,error) {
+func (cc *ConnectionContext) GetPositions() (any, error) {
 	cc.RLock()
 	defer cc.RUnlock()
 
@@ -291,7 +291,7 @@ func (cc *ConnectionContext) GetPositions() (any,error) {
 
 //=============================================================================
 
-func (cc *ConnectionContext) TestAdapter(service, query string) (string,error) {
+func (cc *ConnectionContext) TestAdapter(service, query string) (string, error) {
 	cc.RLock()
 	defer cc.RUnlock()
 

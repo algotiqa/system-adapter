@@ -27,43 +27,44 @@ package interactive
 import (
 	"net/http"
 
-	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
 )
 
 //=============================================================================
 
 const ParamAuthUrl = "authUrl"
-const ParamApiUrl  = "apiUrl"
-const ParamNoAuth  = "noAuth"
+const ParamApiUrl = "apiUrl"
+const ParamNoAuth = "noAuth"
 
 //=============================================================================
 
-var configParams = []*adapter.ParamDef {
+var configParams = []*adapter.ParamDef{
 	{
-		Name     : ParamAuthUrl,
-		Type     : adapter.ParamTypeString,
-		DefValue : "https://www.interactivebrokers.co.uk/sso/Login",
-		Nullable : false,
-		MinValue : 0,
-		MaxValue : 64,
+		Name:     ParamAuthUrl,
+		Type:     adapter.ParamTypeString,
+		DefValue: "https://www.interactivebrokers.co.uk/sso/Login",
+		Nullable: false,
+		MinValue: 0,
+		MaxValue: 64,
 	},
 	{
-		Name     : ParamApiUrl,
-		Type     : adapter.ParamTypeString,
-		DefValue : "https://api.ibkr.com",
-		Nullable : false,
-		MinValue : 0,
-		MaxValue : 64,
+		Name:     ParamApiUrl,
+		Type:     adapter.ParamTypeString,
+		DefValue: "https://api.ibkr.com",
+		Nullable: false,
+		MinValue: 0,
+		MaxValue: 64,
 	},
 	{
-		Name     : ParamNoAuth,
-		Type     : adapter.ParamTypeBool,
-		DefValue : "false",
-		Nullable : false,
-		MinValue : 0,
-		MaxValue : 0,
+		Name:     ParamNoAuth,
+		Type:     adapter.ParamTypeBool,
+		DefValue: "false",
+		Nullable: false,
+		MinValue: 0,
+		MaxValue: 0,
 	},
 }
+
 //-----------------------------------------------------------------------------
 
 var connectParams []*adapter.ParamDef
@@ -71,30 +72,30 @@ var connectParams []*adapter.ParamDef
 //-----------------------------------------------------------------------------
 
 var info = adapter.Info{
-	Code                : "IBKR",
-	Name                : "Interactive Brokers",
-	ConfigParams        : configParams,
-	ConnectParams       : connectParams,
-	SupportsData        : true,
-	SupportsBroker      : true,
+	Code:                 "IBKR",
+	Name:                 "Interactive Brokers",
+	ConfigParams:         configParams,
+	ConnectParams:        connectParams,
+	SupportsData:         true,
+	SupportsBroker:       true,
 	SupportsMultipleData: false,
-	SupportsInventory   : true,
+	SupportsInventory:    true,
 }
 
 //=============================================================================
 
 type Params struct {
-	AuthUrl  string
-	ApiUrl   string
-	NoAuth   bool
+	AuthUrl string
+	ApiUrl  string
+	NoAuth  bool
 }
 
 //=============================================================================
 
 type ib struct {
 	configParams *Params
-	client *http.Client
-	header *http.Header
+	client       *http.Client
+	header       *http.Header
 }
 
 //=============================================================================
@@ -104,14 +105,14 @@ type ib struct {
 //=============================================================================
 
 type Validate struct {
-	UserId      int      `json:"USER_ID"`
-	UserName    string   `json:"USER_NAME"`
-	Result      bool     `json:"RESULT"`
-	AuthTime    int64    `json:"AUTH_TIME"`
-	IsFreeTrial bool     `json:"IS_FREE_TRIAL"`
-	Credential  string   `json:"CREDENTIAL"`
-	Ip          string   `json:"IP"`
-	Expires     int      `json:"EXPIRES"`
+	UserId      int    `json:"USER_ID"`
+	UserName    string `json:"USER_NAME"`
+	Result      bool   `json:"RESULT"`
+	AuthTime    int64  `json:"AUTH_TIME"`
+	IsFreeTrial bool   `json:"IS_FREE_TRIAL"`
+	Credential  string `json:"CREDENTIAL"`
+	Ip          string `json:"IP"`
+	Expires     int    `json:"EXPIRES"`
 }
 
 //=============================================================================
@@ -138,20 +139,20 @@ type Order struct {
 	RemainingQuantity  float32 `json:"remainingQuantity"`
 	FilledQuantity     float32 `json:"filledQuantity"`
 	CompanyName        string  `json:"companyName"`
-	Status             string  `json:"status"`            // Filled
-	OrderCcpStatus     string  `json:"order_ccp_status"`  // Filled
-	OrigOrderType      string  `json:"origOrderType"`     // MARKET
+	Status             string  `json:"status"`           // Filled
+	OrderCcpStatus     string  `json:"order_ccp_status"` // Filled
+	OrigOrderType      string  `json:"origOrderType"`    // MARKET
 	SupportsTaxOpt     string  `json:"supportsTaxOpt"`
 	LastExecutionTime  string  `json:"lastExecutionTime"` // Format is YYMMDDHHmmss in UTC
 	OrderType          string  `json:"orderType"`         // Market
 	OrderRef           string  `json:"order_ref"`
-	TimeInForce        string  `json:"timeInForce"`       // GTC
+	TimeInForce        string  `json:"timeInForce"` // GTC
 	AveragePrice       string  `json:"avgPrice"`
 	LastExecutionTimeR int64   `json:"lastExecutionTime_r"`
-	Side               string  `json:"side"`              // SELL
+	Side               string  `json:"side"` // SELL
 
-	Account          string  `json:"account"`
-	TotalSize        float32 `json:"totalSize"`
+	Account   string  `json:"account"`
+	TotalSize float32 `json:"totalSize"`
 }
 
 //=============================================================================
@@ -163,12 +164,12 @@ type AccountPnLResponse struct {
 //=============================================================================
 
 type UpdatedPnL struct {
-	RowType         int      `json:"rowType"`
-	DailyPnL        float64  `json:"dpl"`
-	NetLiquidity    float64  `json:"nl"`
-	UnrealizedPnL   float64  `json:"upl"`
-	ExcessLiquidity float64  `json:"el"`
-	MarginValue     float64  `json:"mv"`
+	RowType         int     `json:"rowType"`
+	DailyPnL        float64 `json:"dpl"`
+	NetLiquidity    float64 `json:"nl"`
+	UnrealizedPnL   float64 `json:"upl"`
+	ExcessLiquidity float64 `json:"el"`
+	MarginValue     float64 `json:"mv"`
 }
 
 //=============================================================================
@@ -176,10 +177,9 @@ type UpdatedPnL struct {
 type TickleResponse struct {
 	Session    string `json:"session"`
 	SsoExpires int    `json:"ssoExpires"`
-	Hmds      struct {
+	Hmds       struct {
 		Error string `json:"error"`
 	} `json:"hmds"`
-
 }
 
 //=============================================================================

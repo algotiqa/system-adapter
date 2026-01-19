@@ -35,10 +35,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/algotiqa/core/req"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
+	"github.com/algotiqa/system-adapter/pkg/business"
 	"github.com/gin-gonic/gin"
-	"github.com/tradalia/core/req"
-	"github.com/tradalia/system-adapter/pkg/adapter"
-	"github.com/tradalia/system-adapter/pkg/business"
 )
 
 //=============================================================================
@@ -48,7 +48,7 @@ const InstanceCode = "InstanceCode"
 //=============================================================================
 
 func proxyLoginRequests(c *gin.Context) {
-	cookie,err := c.Request.Cookie("InstanceCode")
+	cookie, err := c.Request.Cookie("InstanceCode")
 	if err != nil {
 		slog.Warn("Called without cookie", "url", c.Request.URL.String())
 		return
@@ -58,14 +58,14 @@ func proxyLoginRequests(c *gin.Context) {
 
 	ctx := business.GetConnectionContextByInstanceCode(code)
 	if ctx == nil {
-		req.ReturnError(c, req.NewBadRequestError("Connection context not found : "+ code))
+		req.ReturnError(c, req.NewBadRequestError("Connection context not found : "+code))
 		return
 	}
 
 	authUrl := ctx.GetAdapterAuthUrl()
 	target, err := url.Parse(authUrl)
 	if err != nil {
-		req.ReturnError(c, req.NewBadRequestError("Bad authentication url : "+ authUrl))
+		req.ReturnError(c, req.NewBadRequestError("Bad authentication url : "+authUrl))
 		return
 	}
 
@@ -78,17 +78,17 @@ func proxyLoginRequests(c *gin.Context) {
 func buildProxy(c *gin.Context, target *url.URL, forwardPath string, ctx *adapter.ConnectionContext) *httputil.ReverseProxy {
 	proxy := &httputil.ReverseProxy{}
 
-	proxy.Rewrite = func (r *httputil.ProxyRequest) {
+	proxy.Rewrite = func(r *httputil.ProxyRequest) {
 		out := r.Out
 
 		sb := strings.Builder{}
-		sb.WriteString("\n====== REQUEST : "+ out.Method +" "+out.URL.String()+" --> "+target.Host+forwardPath+" =========\n")
+		sb.WriteString("\n====== REQUEST : " + out.Method + " " + out.URL.String() + " --> " + target.Host + forwardPath + " =========\n")
 		sb.WriteString(dumpHeader(&out.Header, "Original header:"))
 
 		out.URL.Scheme = target.Scheme
-		out.URL.Host   = target.Host
-		out.URL.Path   = forwardPath
-		out.Host       = target.Host
+		out.URL.Host = target.Host
+		out.URL.Path = forwardPath
+		out.Host = target.Host
 
 		remapHeader(&out.Header, c.Request.Host, target, false)
 
@@ -105,7 +105,7 @@ func buildProxy(c *gin.Context, target *url.URL, forwardPath string, ctx *adapte
 	proxy.ModifyResponse = func(res *http.Response) error {
 		r := res.Request
 		sb := strings.Builder{}
-		sb.WriteString("\n====== RESPONSE : "+ r.Method +" "+r.URL.String()+" --> "+target.Host+forwardPath+" =========\n")
+		sb.WriteString("\n====== RESPONSE : " + r.Method + " " + r.URL.String() + " --> " + target.Host + forwardPath + " =========\n")
 		sb.WriteString(dumpHeader(&res.Header, "Response header"))
 		remapHeader(&res.Header, c.Request.Host, target, true)
 		sb.WriteString(dumpHeader(&res.Header, "Modified header:"))
@@ -120,12 +120,12 @@ func buildProxy(c *gin.Context, target *url.URL, forwardPath string, ctx *adapte
 			message := htmlfy("Success", "This page can be closed")
 
 			if err != nil {
-				message = htmlfy("Authentication failed", "Cause: "+ err.Error())
+				message = htmlfy("Authentication failed", "Cause: "+err.Error())
 				slog.Error("Adapter authentication failed", "adapter", ctx.GetAdapterInfo().Name, "error", err.Error())
 			}
 
 			res.Body = io.NopCloser(bytes.NewReader([]byte(message)))
-			res.StatusCode    = http.StatusOK
+			res.StatusCode = http.StatusOK
 			res.ContentLength = int64(len(message))
 			res.Header.Set("Content-Length", strconv.Itoa(len(message)))
 		}
@@ -142,7 +142,7 @@ func remapHeader(header *http.Header, source string, target *url.URL, isResponse
 
 	if !isResponse {
 		if header.Get("Origin") != "" {
-			header.Set("Origin",  target.Scheme+ "://" +target.Host)
+			header.Set("Origin", target.Scheme+"://"+target.Host)
 		}
 
 		if header.Get("Referer") != "" {
@@ -155,7 +155,7 @@ func remapHeader(header *http.Header, source string, target *url.URL, isResponse
 
 	if isResponse {
 		if header.Get("Origin") != "" {
-			header.Set("Origin",  target.Scheme+ "://" +source)
+			header.Set("Origin", target.Scheme+"://"+source)
 		}
 
 		header.Set("Host", source)
@@ -178,10 +178,10 @@ func remapCookies(cookies []*http.Cookie, header *http.Header, source, destin st
 	domain := extractDomain(host)
 
 	for _, cookie := range cookies {
-		sb.WriteString("   "+ cookie.Name+": "+ cookie.Value)
+		sb.WriteString("   " + cookie.Name + ": " + cookie.Value)
 
 		if cookie.Domain != "" {
-			sb.WriteString(" (remapped: "+ cookie.Domain +" --> "+ domain +")")
+			sb.WriteString(" (remapped: " + cookie.Domain + " --> " + domain + ")")
 			cookie.Domain = domain
 			header.Set("Set-Cookie", cookie.String())
 		}
@@ -207,12 +207,12 @@ func extractDomain(host string) string {
 
 func dumpHeader(header *http.Header, message string) string {
 	sb := strings.Builder{}
-	sb.WriteString(message +"\n")
+	sb.WriteString(message + "\n")
 
-	for x,y := range *header {
-		sb.WriteString("   "+ x + " : ")
-		for _,s := range y {
-			sb.WriteString(s +" | ")
+	for x, y := range *header {
+		sb.WriteString("   " + x + " : ")
+		for _, s := range y {
+			sb.WriteString(s + " | ")
 		}
 		sb.WriteString("\n")
 	}

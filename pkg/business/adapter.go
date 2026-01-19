@@ -25,16 +25,16 @@ THE SOFTWARE.
 package business
 
 import (
-	"github.com/tradalia/core/req"
-	"github.com/tradalia/system-adapter/pkg/adapter"
-	"github.com/tradalia/system-adapter/pkg/adapter/local"
-	"github.com/tradalia/system-adapter/pkg/adapter/tradestation"
+	"github.com/algotiqa/core/req"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
+	"github.com/algotiqa/system-adapter/pkg/adapter/local"
+	"github.com/algotiqa/system-adapter/pkg/adapter/tradestation"
 )
 
 //=============================================================================
 
 var adapters map[string]adapter.Adapter
-var infos    []*adapter.Info
+var infos []*adapter.Info
 
 //=============================================================================
 //===
@@ -45,9 +45,9 @@ var infos    []*adapter.Info
 func init() {
 	adapters = map[string]adapter.Adapter{}
 
-	register(local       .NewAdapter())
+	register(local.NewAdapter())
 	register(tradestation.NewAdapter())
-//	register(interactive .NewAdapter())
+	//	register(interactive .NewAdapter())
 }
 
 //=============================================================================
@@ -70,8 +70,8 @@ func GetAdapters() *[]*adapter.Info {
 
 //=============================================================================
 
-func GetAdapter(code string) (*adapter.Info,error) {
-	a,ok := adapters[code]
+func GetAdapter(code string) (*adapter.Info, error) {
+	a, ok := adapters[code]
 	if !ok {
 		return nil, req.NewNotFoundError(code)
 	}
@@ -82,7 +82,7 @@ func GetAdapter(code string) (*adapter.Info,error) {
 //=============================================================================
 
 func GetConnectionParams(code string, configParams map[string]any) ([]*adapter.ParamDef, error) {
-	a,ok := adapters[code]
+	a, ok := adapters[code]
 	if !ok {
 		return nil, req.NewNotFoundError(code)
 	}

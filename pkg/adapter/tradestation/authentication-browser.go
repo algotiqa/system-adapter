@@ -32,8 +32,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/tradalia/core/req"
-	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/algotiqa/core/req"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
 )
 
 //=============================================================================
@@ -62,11 +62,11 @@ func (a *tradestation) connectBrowser(ctx *adapter.ConnectionContext) *adapter.C
 		return &adapter.ConnectionResult{
 			Status: adapter.ContextStatusConnecting,
 			Params: connectParamsCode,
-			Url   : buildUrl(a.connectParams.ClientId),
+			Url:    buildUrl(a.connectParams.ClientId),
 		}
 	}
 
-	tr,err := a.getNewTokens()
+	tr, err := a.getNewTokens()
 	if err != nil {
 		return connectError(err)
 	}
@@ -75,7 +75,7 @@ func (a *tradestation) connectBrowser(ctx *adapter.ConnectionContext) *adapter.C
 		return connectError(err)
 	}
 
-	a.accessToken  = tr.AccessToken
+	a.accessToken = tr.AccessToken
 	a.refreshToken = tr.RefreshToken
 
 	a.setupAPIUrl()
@@ -96,11 +96,11 @@ func (a *tradestation) connectBrowser(ctx *adapter.ConnectionContext) *adapter.C
 func (a *tradestation) refreshTokenBrowser() error {
 	var params = url.Values{}
 	params.Set("grant_type", "refresh_token")
-	params.Set("client_id",     a.connectParams.ClientId)
+	params.Set("client_id", a.connectParams.ClientId)
 	params.Set("client_secret", a.connectParams.ClientSecret)
 	params.Set("refresh_token", a.refreshToken)
 
-	tr,err := a.getTokens(params)
+	tr, err := a.getTokens(params)
 	if err == nil {
 		a.accessToken = tr.AccessToken
 
@@ -117,7 +117,7 @@ func buildUrl(clientId string) string {
 	var sb strings.Builder
 	sb.WriteString(AuthorizeUrl)
 	sb.WriteString("?response_type=code")
-	sb.WriteString("&client_id="+ clientId)
+	sb.WriteString("&client_id=" + clientId)
 	sb.WriteString("&redirect_uri=http%3A%2F%2Flocalhost%3A8080")
 	sb.WriteString("&audience=https%3A%2F%2Fapi.tradestation.com")
 	sb.WriteString("&state=STATE")
@@ -131,10 +131,10 @@ func buildUrl(clientId string) string {
 func (a *tradestation) getNewTokens() (*TokenResponse, error) {
 	var params = url.Values{}
 	params.Set("grant_type", "authorization_code")
-	params.Set("client_id",     a.connectParams.ClientId)
+	params.Set("client_id", a.connectParams.ClientId)
 	params.Set("client_secret", a.connectParams.ClientSecret)
-	params.Set("code",          a.connectParams.ClientCode)
-	params.Set("redirect_uri"   , "http://localhost:8080")
+	params.Set("code", a.connectParams.ClientCode)
+	params.Set("redirect_uri", "http://localhost:8080")
 
 	return a.getTokens(params)
 }
@@ -147,7 +147,7 @@ func (a *tradestation) getTokens(params url.Values) (*TokenResponse, error) {
 	rq, err := http.NewRequest("POST", OauthTokenUrl, payload)
 	if err != nil {
 		slog.Error("getTokens: Error creating a POST request", "error", err.Error())
-		return nil,err
+		return nil, err
 	}
 
 	rq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -157,7 +157,7 @@ func (a *tradestation) getTokens(params url.Values) (*TokenResponse, error) {
 	err = req.BuildResponse(res, err, out)
 
 	if res != nil && res.Body != nil {
-		_=res.Body.Close()
+		_ = res.Body.Close()
 	}
 
 	return out, err

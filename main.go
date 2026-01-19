@@ -25,13 +25,13 @@ THE SOFTWARE.
 package main
 
 import (
-	"github.com/tradalia/core/boot"
-	"github.com/tradalia/core/msg"
-	"github.com/tradalia/core/req"
-	"github.com/tradalia/system-adapter/pkg/app"
-	"github.com/tradalia/system-adapter/pkg/business"
-	"github.com/tradalia/system-adapter/pkg/process"
-	"github.com/tradalia/system-adapter/pkg/service"
+	"github.com/algotiqa/core/boot"
+	"github.com/algotiqa/core/msg"
+	"github.com/algotiqa/core/req"
+	"github.com/algotiqa/system-adapter/pkg/app"
+	"github.com/algotiqa/system-adapter/pkg/business"
+	"github.com/algotiqa/system-adapter/pkg/process"
+	"github.com/algotiqa/system-adapter/pkg/service"
 	"log/slog"
 )
 
@@ -45,7 +45,7 @@ func main() {
 	cfg := &app.Config{}
 	boot.ReadConfig(component, cfg)
 	logger := boot.InitLogger(component, &cfg.Application)
-	engine := boot.InitEngine(logger,    &cfg.Application)
+	engine := boot.InitEngine(logger, &cfg.Application)
 	initClients()
 	msg.InitMessaging(&cfg.Messaging)
 	service.Init(engine, cfg, logger)

@@ -25,9 +25,9 @@ THE SOFTWARE.
 package service
 
 import (
-	"github.com/tradalia/core/auth"
-	"github.com/tradalia/system-adapter/pkg/adapter"
-	"github.com/tradalia/system-adapter/pkg/business"
+	"github.com/algotiqa/core/auth"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
+	"github.com/algotiqa/system-adapter/pkg/business"
 )
 
 //=============================================================================
@@ -41,10 +41,10 @@ func getAdapters(c *auth.Context) {
 
 func getAdapter(c *auth.Context) {
 	code := c.GetCodeFromUrl()
-	a,err := business.GetAdapter(code)
+	a, err := business.GetAdapter(code)
 
 	if err == nil {
-		_= c.ReturnObject(a)
+		_ = c.ReturnObject(a)
 	}
 
 	c.ReturnError(err)
@@ -53,15 +53,15 @@ func getAdapter(c *auth.Context) {
 //=============================================================================
 
 func getConnectionParams(c *auth.Context) {
-	code   := c.GetCodeFromUrl()
+	code := c.GetCodeFromUrl()
 	config := map[string]any{}
-	err    := c.BindParamsFromBody(&config)
+	err := c.BindParamsFromBody(&config)
 
 	if err == nil {
 		var params []*adapter.ParamDef
-		params,err = business.GetConnectionParams(code, config)
+		params, err = business.GetConnectionParams(code, config)
 		if err == nil {
-			_= c.ReturnObject(params)
+			_ = c.ReturnObject(params)
 		}
 	}
 

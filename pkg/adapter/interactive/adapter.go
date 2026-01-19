@@ -33,9 +33,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/tradalia/core/datatype"
-	"github.com/tradalia/core/req"
-	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/algotiqa/core/datatype"
+	"github.com/algotiqa/core/req"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
 )
 
 //=============================================================================
@@ -98,6 +98,7 @@ func (a *ib) Disconnect(ctx *adapter.ConnectionContext) error {
 func (a *ib) IsWebLoginCompleted(httpCode int, path string) bool {
 	return httpCode == http.StatusFound && path == "/sso/Dispatcher"
 }
+
 //=============================================================================
 
 func (a *ib) InitFromWebLogin(reqHeader *http.Header, resCookies []*http.Cookie) error {
@@ -110,8 +111,7 @@ func (a *ib) InitFromWebLogin(reqHeader *http.Header, resCookies []*http.Cookie)
 	a.client = &http.Client{
 		Timeout: time.Minute * 3,
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-			},
+			TLSClientConfig: &tls.Config{},
 		},
 	}
 
@@ -125,17 +125,17 @@ func (a *ib) InitFromWebLogin(reqHeader *http.Header, resCookies []*http.Cookie)
 		return errors.New("session is invalid")
 	}
 
-//	orders,err := a.getAccountOrders()
-//	pnl,err := a.getAccountProfitAndLoss()
-//	tic,err := a.tickle()
-//	fmt.Println("RES:"+tic.Session)
+	//	orders,err := a.getAccountOrders()
+	//	pnl,err := a.getAccountProfitAndLoss()
+	//	tic,err := a.tickle()
+	//	fmt.Println("RES:"+tic.Session)
 	return nil
 }
 
 //=============================================================================
 
 func (a *ib) GetTokenExpSeconds() int {
-	return 0;
+	return 0
 }
 
 //=============================================================================
@@ -150,49 +150,49 @@ func (a *ib) RefreshToken() error {
 //===
 //=============================================================================
 
-func (a *ib) GetRootSymbols(filter string) ([]*adapter.RootSymbol,error) {
+func (a *ib) GetRootSymbols(filter string) ([]*adapter.RootSymbol, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *ib) GetRootSymbol(root string) (*adapter.RootSymbol,error) {
+func (a *ib) GetRootSymbol(root string) (*adapter.RootSymbol, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *ib) GetInstruments(root string) ([]*adapter.Instrument,error) {
+func (a *ib) GetInstruments(root string) ([]*adapter.Instrument, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *ib) GetPriceBars(symbol string, date datatype.IntDate) (*adapter.PriceBars,error) {
+func (a *ib) GetPriceBars(symbol string, date datatype.IntDate) (*adapter.PriceBars, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *ib) GetAccounts() ([]*adapter.Account,error) {
+func (a *ib) GetAccounts() ([]*adapter.Account, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *ib) GetOrders() (any,error) {
+func (a *ib) GetOrders() (any, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *ib) GetPositions() (any,error) {
+func (a *ib) GetPositions() (any, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *ib) TestService(path,param string) (string,error) {
+func (a *ib) TestService(path, param string) (string, error) {
 	return "", nil
 }
 
@@ -204,8 +204,8 @@ func (a *ib) TestService(path,param string) (string,error) {
 
 func retrieveParams(values map[string]any) *Params {
 	return &Params{
-		AuthUrl: values[ParamAuthUrl] .(string),
-		ApiUrl : values[ParamApiUrl]  .(string),
+		AuthUrl: values[ParamAuthUrl].(string),
+		ApiUrl:  values[ParamApiUrl].(string),
 	}
 }
 
@@ -218,16 +218,16 @@ func buildHttpHeader(reqHeader *http.Header, resCookies []*http.Cookie) (*http.H
 	}
 
 	cookies := reqHeader.Get("Cookie")
-	cookies += "; "+ userId.Name+"="+ userId.Value
+	cookies += "; " + userId.Name + "=" + userId.Value
 
 	h := make(http.Header)
-	h.Set("Accept",         "*/*")
-	h.Set("Cache-Control",  "no-cache")
-	h.Set("Pragma",         "no-cache")
+	h.Set("Accept", "*/*")
+	h.Set("Cache-Control", "no-cache")
+	h.Set("Pragma", "no-cache")
 	h.Set("Sec-Fetch-Dest", "empty")
 	h.Set("Sec-Fetch-Mode", "cors")
 
-	h.Set("Cookie",          cookies)
+	h.Set("Cookie", cookies)
 	h.Set("Accept-Encoding", reqHeader.Get("Accept-Encoding"))
 	h.Set("Accept-Language", reqHeader.Get("Accept-Language"))
 
@@ -236,7 +236,7 @@ func buildHttpHeader(reqHeader *http.Header, resCookies []*http.Cookie) (*http.H
 
 //=============================================================================
 
-func findUserId(cookies []*http.Cookie) (*http.Cookie, error){
+func findUserId(cookies []*http.Cookie) (*http.Cookie, error) {
 	for _, cookie := range cookies {
 		if cookie.Name == "USERID" {
 			return cookie, nil
@@ -290,7 +290,7 @@ func (a *ib) doPost(url string, params any, output any) error {
 //=============================================================================
 
 func (a *ib) ssoValidate() (*Validate, error) {
-	apiUrl := a.configParams.ApiUrl +"/v1/api/sso/validate"
+	apiUrl := a.configParams.ApiUrl + "/v1/api/sso/validate"
 	var res Validate
 	err := a.doGet(apiUrl, &res)
 
@@ -300,7 +300,7 @@ func (a *ib) ssoValidate() (*Validate, error) {
 //=============================================================================
 
 func (a *ib) getAccountOrders() (*OrdersResponse, error) {
-	apiUrl := a.configParams.ApiUrl +"/v1/api/iserver/account/orders?force=true"
+	apiUrl := a.configParams.ApiUrl + "/v1/api/iserver/account/orders?force=true"
 	var res OrdersResponse
 	err := a.doGet(apiUrl, &res)
 
@@ -310,7 +310,7 @@ func (a *ib) getAccountOrders() (*OrdersResponse, error) {
 //=============================================================================
 
 func (a *ib) getAccountProfitAndLoss() (*AccountPnLResponse, error) {
-	apiUrl := a.configParams.ApiUrl +"/v1/api/iserver/account/pnl/partitioned"
+	apiUrl := a.configParams.ApiUrl + "/v1/api/iserver/account/pnl/partitioned"
 	var res AccountPnLResponse
 	err := a.doGet(apiUrl, &res)
 
@@ -320,7 +320,7 @@ func (a *ib) getAccountProfitAndLoss() (*AccountPnLResponse, error) {
 //=============================================================================
 
 func (a *ib) tickle() (*TickleResponse, error) {
-	apiUrl := a.configParams.ApiUrl +"/v1/api/tickle"
+	apiUrl := a.configParams.ApiUrl + "/v1/api/tickle"
 	var res TickleResponse
 	err := a.doPost(apiUrl, "{}", &res)
 

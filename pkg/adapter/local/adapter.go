@@ -27,24 +27,24 @@ package local
 import (
 	"net/http"
 
-	"github.com/tradalia/core/datatype"
-	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/algotiqa/core/datatype"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
 )
 
 //=============================================================================
 
-var configParams  []*adapter.ParamDef
+var configParams []*adapter.ParamDef
 
 //-----------------------------------------------------------------------------
 
 var info = adapter.Info{
-	Code                : "LOCAL",
-	Name                : "Local system",
-	ConfigParams        : configParams,
-	SupportsData        : true,
-	SupportsBroker      : true,
+	Code:                 "LOCAL",
+	Name:                 "Local system",
+	ConfigParams:         configParams,
+	SupportsData:         true,
+	SupportsBroker:       true,
 	SupportsMultipleData: true,
-	SupportsInventory   : false,
+	SupportsInventory:    false,
 }
 
 //=============================================================================
@@ -112,7 +112,7 @@ func (a *local) InitFromWebLogin(reqHeader *http.Header, resCookies []*http.Cook
 //=============================================================================
 
 func (a *local) GetTokenExpSeconds() int {
-	return 0;
+	return 0
 }
 
 //=============================================================================
@@ -127,49 +127,49 @@ func (a *local) RefreshToken() error {
 //===
 //=============================================================================
 
-func (a *local) GetRootSymbols(filter string) ([]*adapter.RootSymbol,error) {
+func (a *local) GetRootSymbols(filter string) ([]*adapter.RootSymbol, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *local) GetRootSymbol(root string) (*adapter.RootSymbol,error) {
+func (a *local) GetRootSymbol(root string) (*adapter.RootSymbol, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *local) GetInstruments(root string) ([]*adapter.Instrument,error) {
+func (a *local) GetInstruments(root string) ([]*adapter.Instrument, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *local) GetPriceBars(symbol string, date datatype.IntDate) (*adapter.PriceBars,error) {
+func (a *local) GetPriceBars(symbol string, date datatype.IntDate) (*adapter.PriceBars, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *local) GetAccounts() ([]*adapter.Account,error) {
+func (a *local) GetAccounts() ([]*adapter.Account, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *local) GetOrders() (any,error) {
+func (a *local) GetOrders() (any, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *local) GetPositions() (any,error) {
+func (a *local) GetPositions() (any, error) {
 	return nil, nil
 }
 
 //=============================================================================
 
-func (a *local) TestService(path,param string) (string,error) {
+func (a *local) TestService(path, param string) (string, error) {
 	return "", nil
 }
 

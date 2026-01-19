@@ -34,8 +34,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/tradalia/core/req"
-	"github.com/tradalia/system-adapter/pkg/adapter"
+	"github.com/algotiqa/core/req"
+	"github.com/algotiqa/system-adapter/pkg/adapter"
 	"golang.org/x/net/html"
 )
 
@@ -73,16 +73,16 @@ type LoginRequest struct {
 	State        string `json:"state"`
 	Tenant       string `json:"tenant"`
 	Username     string `json:"username"`
-	Csrf	     string `json:"_csrf"`
+	Csrf         string `json:"_csrf"`
 	IntState     string `json:"_intstate"`
 }
 
 //=============================================================================
 
 type Auth0Config struct {
-	ClientId     string `json:"clientID"`
-	Auth0Domain  string `json:"auth0Domain"`
-	Auth0Tenant  string `json:"auth0Tenant"`
+	ClientId        string `json:"clientID"`
+	Auth0Domain     string `json:"auth0Domain"`
+	Auth0Tenant     string `json:"auth0Tenant"`
 	InternalOptions struct {
 		Protocol string `json:"protocol"`
 		Csrf     string `json:"_csrf"`
@@ -101,9 +101,9 @@ type LoginResult struct {
 //=============================================================================
 
 type TokenRefreshResponse struct {
-	AccessToken  string `json:"accessToken"`
-	IdToken      string `json:"idToken"`
-	Expiry       int    `json:"expiry"`
+	AccessToken string `json:"accessToken"`
+	IdToken     string `json:"idToken"`
+	Expiry      int    `json:"expiry"`
 }
 
 //=============================================================================
@@ -113,14 +113,14 @@ type TokenRefreshResponse struct {
 //=============================================================================
 
 func (a *tradestation) connectInternal(ctx *adapter.ConnectionContext) *adapter.ConnectionResult {
-	loginInfo,err := a.createLoginInfo()
+	loginInfo, err := a.createLoginInfo()
 	if err != nil {
 		return connectError(err)
 	}
 
 	a.clientId = loginInfo.Client
 
-	loginRes,err := a.login(loginInfo)
+	loginRes, err := a.login(loginInfo)
 	if err != nil {
 		return connectError(err)
 	}
@@ -159,8 +159,8 @@ func (a *tradestation) refreshTokenInternal() error {
 	}
 
 	setupCommonHeader(&rq.Header)
-	rq.Header.Set("Accept",         "*/*")
-	rq.Header.Set("Origin",         "https://my.tradestation.com")
+	rq.Header.Set("Accept", "*/*")
+	rq.Header.Set("Origin", "https://my.tradestation.com")
 	rq.Header.Set("Sec-Fetch-Dest", "empty")
 	rq.Header.Set("Sec-Fetch-Mode", "cors")
 	rq.Header.Set("Sec-Fetch-Site", "same-origin")
@@ -172,7 +172,7 @@ func (a *tradestation) refreshTokenInternal() error {
 
 	if err == nil {
 		a.accessToken = out.AccessToken
-		a.refreshToken= out.IdToken
+		a.refreshToken = out.IdToken
 
 		if a.accessToken == "" {
 			err = errors.New("Got an empty access token (refresh token is not working)")
@@ -180,7 +180,7 @@ func (a *tradestation) refreshTokenInternal() error {
 	}
 
 	if res != nil && res.Body != nil {
-		_=res.Body.Close()
+		_ = res.Body.Close()
 	}
 
 	return err
@@ -188,7 +188,7 @@ func (a *tradestation) refreshTokenInternal() error {
 
 //=============================================================================
 
-func (a *tradestation) createLoginInfo() (*LoginInfo, error){
+func (a *tradestation) createLoginInfo() (*LoginInfo, error) {
 	rq, err := http.NewRequest("GET", LoginPageUrl, nil)
 
 	if err != nil {
@@ -201,13 +201,13 @@ func (a *tradestation) createLoginInfo() (*LoginInfo, error){
 
 	h := http.Header{}
 	setupCommonHeader(&h)
-	h.Add("Accept",            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
-	h.Add("Priority",          "u=0, i")
-	h.Add("Sec-Fetch-Dest",    "document")
-	h.Add("Sec-Fetch-Mode",    "navigate")
-	h.Add("Sec-Fetch-Site",    "none")
-	h.Add("Sec-Fetch-User",    "?1")
-	h.Add("Upgrade-Insecure-Requests","1")
+	h.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+	h.Add("Priority", "u=0, i")
+	h.Add("Sec-Fetch-Dest", "document")
+	h.Add("Sec-Fetch-Mode", "navigate")
+	h.Add("Sec-Fetch-Site", "none")
+	h.Add("Sec-Fetch-User", "?1")
+	h.Add("Upgrade-Insecure-Requests", "1")
 	rq.Header = h
 
 	res, err := a.client.Do(rq)
@@ -219,7 +219,7 @@ func (a *tradestation) createLoginInfo() (*LoginInfo, error){
 		return nil, err
 	}
 
-	scripts       := extractScripts(doc, nil)
+	scripts := extractScripts(doc, nil)
 	encodedConfig := extractEncodedConfig(scripts)
 
 	if encodedConfig == "" {
@@ -228,14 +228,14 @@ func (a *tradestation) createLoginInfo() (*LoginInfo, error){
 
 	bytes, err := base64.StdEncoding.DecodeString(encodedConfig)
 	if err != nil {
-		return nil, errors.New("Can't decode config from base64 : "+encodedConfig)
+		return nil, errors.New("Can't decode config from base64 : " + encodedConfig)
 	}
 
 	var authConfig Auth0Config
 	err = json.Unmarshal(bytes, &authConfig)
 	if err != nil {
 		slog.Error("Bad JSON response from server", "error", err.Error())
-		return nil,err
+		return nil, err
 	}
 
 	//--- The original GET request gets many refirects. We setup some common headers for later use
@@ -246,17 +246,17 @@ func (a *tradestation) createLoginInfo() (*LoginInfo, error){
 	q := res.Request.URL.Query()
 
 	return &LoginInfo{
-		State              : q.Get("state"),
-		Client             : q.Get("client"),
-		Protocol           : q.Get("protocol"),
-		Scope              : q.Get("scope"),
-		ResponseType       : q.Get("response_type"),
-		RedirectUri        : q.Get("redirect_uri"),
-		Audience           : q.Get("audience"),
-		Nonce              : q.Get("nonce"),
+		State:               q.Get("state"),
+		Client:              q.Get("client"),
+		Protocol:            q.Get("protocol"),
+		Scope:               q.Get("scope"),
+		ResponseType:        q.Get("response_type"),
+		RedirectUri:         q.Get("redirect_uri"),
+		Audience:            q.Get("audience"),
+		Nonce:               q.Get("nonce"),
 		CodeChallengeMethod: q.Get("code_challenge_method"),
-		CodeChallenge      : q.Get("code_challenge"),
-		Auth0Config        : &authConfig,
+		CodeChallenge:       q.Get("code_challenge"),
+		Auth0Config:         &authConfig,
 	}, nil
 }
 
@@ -264,25 +264,25 @@ func (a *tradestation) createLoginInfo() (*LoginInfo, error){
 
 func (a *tradestation) login(info *LoginInfo) (*LoginResult, error) {
 	lr := LoginRequest{
-		Audience    : info.Audience,
-		ClientId    : info.Client,
-		Connection  : "auth0-api-connection",
-		Nonce       : info.Nonce,
-		Password    : a.connectParams.Password,
-		RedirectUri : info.RedirectUri,
+		Audience:     info.Audience,
+		ClientId:     info.Client,
+		Connection:   "auth0-api-connection",
+		Nonce:        info.Nonce,
+		Password:     a.connectParams.Password,
+		RedirectUri:  info.RedirectUri,
 		ResponseType: info.ResponseType,
-		Scope       : info.Scope,
-		State       : info.State,
-		Tenant      : info.Auth0Config.Auth0Tenant,
-		Username    : a.connectParams.Username,
-		Csrf        : info.Auth0Config.InternalOptions.Csrf,
-		IntState    : info.Auth0Config.InternalOptions.Intstate,
+		Scope:        info.Scope,
+		State:        info.State,
+		Tenant:       info.Auth0Config.Auth0Tenant,
+		Username:     a.connectParams.Username,
+		Csrf:         info.Auth0Config.InternalOptions.Csrf,
+		IntState:     info.Auth0Config.InternalOptions.Intstate,
 	}
 
 	body, err := json.Marshal(&lr)
 	if err != nil {
 		slog.Error("login: Error marshalling POST parameter", "error", err.Error())
-		return nil,err
+		return nil, err
 	}
 
 	reader := bytes.NewReader(body)
@@ -290,7 +290,7 @@ func (a *tradestation) login(info *LoginInfo) (*LoginResult, error) {
 	rq, err := http.NewRequest("POST", LoginPostUrl, reader)
 	if err != nil {
 		slog.Error("login: Error creating a POST request", "error", err.Error())
-		return nil,err
+		return nil, err
 	}
 
 	rq.Header = *a.header
@@ -301,14 +301,14 @@ func (a *tradestation) login(info *LoginInfo) (*LoginResult, error) {
 	doc, err := html.Parse(res.Body)
 	if err != nil {
 		slog.Error("login: Error reading from body", "error", err.Error())
-		return nil,err
+		return nil, err
 	}
 
 	lres := LoginResult{}
 	extractLoginResult(doc, &lres)
 	if lres.Wa == "" {
 		slog.Error("login: Can't login to Tradestation", "result", toString(doc))
-		return nil,errors.New("Can't login to Tradestation")
+		return nil, errors.New("Can't login to Tradestation")
 	}
 
 	return &lres, nil
@@ -316,17 +316,17 @@ func (a *tradestation) login(info *LoginInfo) (*LoginResult, error) {
 
 //=============================================================================
 
-func (a *tradestation) callCallback(lr *LoginResult) (string,error) {
+func (a *tradestation) callCallback(lr *LoginResult) (string, error) {
 	var params = url.Values{}
-	params.Set("wa"     , lr.Wa)
+	params.Set("wa", lr.Wa)
 	params.Set("wresult", lr.Wresult)
-	params.Set("wctx"   , lr.Wctx)
+	params.Set("wctx", lr.Wctx)
 	payload := bytes.NewBufferString(params.Encode())
 
 	rq, err := http.NewRequest("POST", LoginCallbackUrl, payload)
 	if err != nil {
 		slog.Error("callCallback: Error creating a POST request", "error", err.Error())
-		return "",err
+		return "", err
 	}
 
 	rq.Header = *a.header
@@ -339,24 +339,24 @@ func (a *tradestation) callCallback(lr *LoginResult) (string,error) {
 	doc, err := html.Parse(res.Body)
 	if err != nil {
 		slog.Error("callCallback: Error reading from body", "error", err.Error())
-		return "",err
+		return "", err
 	}
 
 	if res.Request.URL.Path != LoginTwoFAPath {
 		slog.Error("callCallback: Didn't get the 2FA page", "result", toString(doc))
-		return "",errors.New("Didn't get the 2FA page")
+		return "", errors.New("Didn't get the 2FA page")
 	}
 
 	newState := res.Request.URL.Query().Get("state")
-	return newState,nil
+	return newState, nil
 }
 
 //=============================================================================
 
 func (a *tradestation) submitTwoFACode(state string) error {
 	var params = url.Values{}
-	params.Set("state" , state)
-	params.Set("code"  , a.connectParams.TwoFACode)
+	params.Set("state", state)
+	params.Set("code", a.connectParams.TwoFACode)
 	params.Set("action", "default")
 	payload := bytes.NewBufferString(params.Encode())
 
@@ -368,7 +368,7 @@ func (a *tradestation) submitTwoFACode(state string) error {
 
 	rq.Header = *a.header
 	setupCommonHeader(&rq.Header)
-	rq.Header.Set("Accept",       "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+	rq.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
 	rq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	res, err := a.client.Do(rq)
@@ -385,7 +385,7 @@ func (a *tradestation) submitTwoFACode(state string) error {
 		return errors.New("Didn't get the dashboard page")
 	}
 
-	a.accessToken  = res.Header.Get("X-Authorization")
+	a.accessToken = res.Header.Get("X-Authorization")
 	a.refreshToken = res.Header.Get("X-Id-Token")
 
 	return nil
@@ -394,7 +394,7 @@ func (a *tradestation) submitTwoFACode(state string) error {
 //=============================================================================
 
 func (a *tradestation) testToken() error {
-	accounts,err := a.GetAccounts()
+	accounts, err := a.GetAccounts()
 	if err != nil {
 		return err
 	}
@@ -414,7 +414,7 @@ func (a *tradestation) testToken() error {
 
 func retrieveConfigParams(values map[string]any) *ConfigParams {
 	return &ConfigParams{
-		Account : getString(values, ParamAccount),
+		Account:  getString(values, ParamAccount),
 		AuthType: getString(values, ParamAuthType),
 	}
 }
@@ -423,19 +423,19 @@ func retrieveConfigParams(values map[string]any) *ConfigParams {
 
 func retrieveConnectParams(values map[string]any) *ConnectParams {
 	return &ConnectParams{
-		Username    : getString(values, adapter.ParamUsername),
-		Password    : getString(values, adapter.ParamPassword),
-		TwoFACode   : getString(values, adapter.ParamTwoFACode),
-		ClientId    : getString(values, ParamClientId),
+		Username:     getString(values, adapter.ParamUsername),
+		Password:     getString(values, adapter.ParamPassword),
+		TwoFACode:    getString(values, adapter.ParamTwoFACode),
+		ClientId:     getString(values, ParamClientId),
 		ClientSecret: getString(values, ParamClientSecret),
-		ClientCode  : getString(values, ParamClientCode),
+		ClientCode:   getString(values, ParamClientCode),
 	}
 }
 
 //=============================================================================
 
 func getString(values map[string]any, name string) string {
-	value,ok := values[name]
+	value, ok := values[name]
 	if !ok {
 		return ""
 	}
@@ -464,7 +464,7 @@ func extractEncodedConfig(scripts []*html.Node) string {
 	for _, node := range scripts {
 		if node.Attr == nil {
 			text := node.FirstChild.Data
-			idx  := strings.Index(text, "'")
+			idx := strings.Index(text, "'")
 			size := len(text)
 			return text[idx+1 : size-6]
 		}
@@ -488,13 +488,16 @@ func extractLoginResult(node *html.Node, lr *LoginResult) {
 //=============================================================================
 
 func extractLoginResultAttribute(node *html.Node, lr *LoginResult) {
-	name  := getAttributeValue(node, "name")
+	name := getAttributeValue(node, "name")
 	value := getAttributeValue(node, "value")
 
 	switch name {
-	case "wa"     : lr.Wa      = value
-	case "wresult": lr.Wresult = value
-	case "wctx"   : lr.Wctx    = value
+	case "wa":
+		lr.Wa = value
+	case "wresult":
+		lr.Wresult = value
+	case "wctx":
+		lr.Wctx = value
 	}
 }
 
@@ -513,34 +516,34 @@ func getAttributeValue(node *html.Node, name string) string {
 //=============================================================================
 
 func setupHeader(h *http.Header) {
-	h.Set("Accept",         "*/*")
-	h.Add("Priority",       "u=0, i")
-	h.Set("Origin",         "https://signin.tradestation.com")
+	h.Set("Accept", "*/*")
+	h.Add("Priority", "u=0, i")
+	h.Set("Origin", "https://signin.tradestation.com")
 	h.Add("Sec-Fetch-Dest", "empty")
 	h.Add("Sec-Fetch-Mode", "cors")
 	h.Add("Sec-Fetch-Site", "same-origin")
-	h.Set("Content-Type",   "Application/json")
-	h.Set("Auth0-Client",   "eyJuYW1lIjoiYXV0aDAuanMtdWxwIiwidmVyc2lvbiI6IjkuMTYuNCJ9")
+	h.Set("Content-Type", "Application/json")
+	h.Set("Auth0-Client", "eyJuYW1lIjoiYXV0aDAuanMtdWxwIiwidmVyc2lvbiI6IjkuMTYuNCJ9")
 }
 
 //=============================================================================
 
 func setupCommonHeader(h *http.Header) {
-	h.Add("Accept-Encoding",   "gzip, deflate, br, zstd")
-	h.Add("Accept-Language",   "en-US,en;q=0.9")
-	h.Add("Cache-Control",     "no-cache")
-	h.Add("Pragma",            "no-cache")
-	h.Add("Sec-Ch-Ua",         "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"")
-	h.Add("Sec-Ch-Ua-mobile",  "?0")
-	h.Add("Sec-Ch-Ua-platform","\"Linux\"")
-	h.Add("User-Agent",        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
+	h.Add("Accept-Encoding", "gzip, deflate, br, zstd")
+	h.Add("Accept-Language", "en-US,en;q=0.9")
+	h.Add("Cache-Control", "no-cache")
+	h.Add("Pragma", "no-cache")
+	h.Add("Sec-Ch-Ua", "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"")
+	h.Add("Sec-Ch-Ua-mobile", "?0")
+	h.Add("Sec-Ch-Ua-platform", "\"Linux\"")
+	h.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
 }
 
 //=============================================================================
 
 func toString(node *html.Node) string {
 	var b bytes.Buffer
-	err  := html.Render(&b, node)
+	err := html.Render(&b, node)
 	if err != nil {
 		return err.Error()
 	}
@@ -552,7 +555,7 @@ func toString(node *html.Node) string {
 
 func connectError(err error) *adapter.ConnectionResult {
 	return &adapter.ConnectionResult{
-		Status : adapter.ContextStatusError,
+		Status:  adapter.ContextStatusError,
 		Message: err.Error(),
 	}
 }
