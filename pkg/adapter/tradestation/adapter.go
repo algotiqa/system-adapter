@@ -264,8 +264,12 @@ func (a *tradestation) GetInstruments(root string) ([]*adapter.Instrument, error
 //=============================================================================
 
 func (a *tradestation) GetPriceBars(symbol string, date datatype.IntDate) (*adapter.PriceBars, error) {
-	//--- Last time set to 23:59:50 (and not 59) as it seems that Tradestation somethimes returns 1 extra bar
-	query := "unit=minute&interval=1&firstdate=" + date.String() + "T00%3A00%3A00Z&lastdate=" + date.String() + "T23%3A59%3A00Z"
+	//--- 40 days is the maximum number of 1 min bars that TradeStation can return (57600 bars)
+	endDate := date.AddDays(40 - 1)
+
+	//--- Last time set to 23:59:50 (and not 59) as it seems that Tradestation sometimes returns 1 extra bar
+
+	query := "unit=minute&interval=1&firstdate=" + date.String() + "T00%3A00%3A00Z&lastdate=" + endDate.String() + "T23%3A59%3A00Z"
 	apiUrl := a.apiUrl + UrlMarketDataBarcharts + "/" + symbol + "?" + query
 
 	priceBars := adapter.PriceBars{
@@ -291,6 +295,11 @@ func (a *tradestation) GetPriceBars(symbol string, date datatype.IntDate) (*adap
 		return &priceBars, nil
 	}
 
+	if rres.StatusCode == http.StatusTooManyRequests {
+		priceBars.TooManyRequests = true
+		return &priceBars, nil
+	}
+
 	//--- Read response
 
 	err = req.BuildResponse(rres, err, &res)
@@ -298,9 +307,11 @@ func (a *tradestation) GetPriceBars(symbol string, date datatype.IntDate) (*adap
 		return nil, err
 	}
 
+	var lastBarTime *time.Time
+
 	for _, bar := range res.Bars {
-		pb := adapter.PriceBar{
-			TimeStamp:    time.UnixMilli(bar.Epoch),
+		pb := &adapter.PriceBar{
+			TimeStamp:    time.UnixMilli(bar.Epoch).In(time.UTC),
 			High:         toFloat64(bar.High),
 			Low:          toFloat64(bar.Low),
 			Open:         toFloat64(bar.Open),
@@ -312,9 +323,16 @@ func (a *tradestation) GetPriceBars(symbol string, date datatype.IntDate) (*adap
 			OpenInterest: toInt(bar.OpenInterest),
 		}
 
-		priceBars.Bars = append(priceBars.Bars, &pb)
+		priceBars.Bars = append(priceBars.Bars, pb)
+		lastBarTime = &pb.TimeStamp
 	}
 
+	if lastBarTime != nil {
+		lastDate := datatype.ToIntDate(lastBarTime)
+		priceBars.Days = date.Days(lastDate) + 1
+	}
+
+	slog.Info("GetPriceBars", "symbol", symbol, "date", date, "bars", len(priceBars.Bars))
 	return &priceBars, nil
 }
 
