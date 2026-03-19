@@ -30,10 +30,10 @@ import (
 	"net/url"
 
 	"github.com/algotiqa/core/auth"
-	"github.com/algotiqa/core/datatype"
 	"github.com/algotiqa/core/req"
 	"github.com/algotiqa/system-adapter/pkg/adapter"
 	"github.com/algotiqa/system-adapter/pkg/business"
+	"github.com/algotiqa/types"
 	"github.com/gin-gonic/gin"
 )
 
@@ -163,7 +163,7 @@ func getPriceBars(c *auth.Context) {
 	symbol := c.Gin.Param("symbol")
 	date := c.Gin.Query("date")
 
-	id, err := datatype.ParseIntDate(date, true)
+	id, err := types.ParseIntDate(date, true)
 
 	if err != nil {
 		c.ReturnError(req.NewBadRequestError("Missing or invalid 'date' parameter"))

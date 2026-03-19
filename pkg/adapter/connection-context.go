@@ -31,7 +31,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/algotiqa/core/datatype"
+	"github.com/algotiqa/types"
 )
 
 //=============================================================================
@@ -240,7 +240,7 @@ func (cc *ConnectionContext) GetInstruments(root string) ([]*Instrument, error) 
 
 //=============================================================================
 
-func (cc *ConnectionContext) GetPriceBars(symbol string, date datatype.IntDate) (*PriceBars, error) {
+func (cc *ConnectionContext) GetPriceBars(symbol string, date types.Date) (*PriceBars, error) {
 	cc.RLock()
 	defer cc.RUnlock()
 

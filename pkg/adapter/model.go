@@ -32,7 +32,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/algotiqa/core/datatype"
+	"github.com/algotiqa/types"
 )
 
 //=============================================================================
@@ -174,7 +174,7 @@ type Adapter interface {
 	GetRootSymbols(filter string) ([]*RootSymbol, error)
 	GetRootSymbol(root string) (*RootSymbol, error)
 	GetInstruments(root string) ([]*Instrument, error)
-	GetPriceBars(symbol string, date datatype.IntDate) (*PriceBars, error)
+	GetPriceBars(symbol string, date types.Date) (*PriceBars, error)
 	GetAccounts() ([]*Account, error)
 	GetOrders() (any, error)
 	GetPositions() (any, error)

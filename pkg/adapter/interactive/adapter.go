@@ -33,9 +33,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/algotiqa/core/datatype"
 	"github.com/algotiqa/core/req"
 	"github.com/algotiqa/system-adapter/pkg/adapter"
+	"github.com/algotiqa/types"
 )
 
 //=============================================================================
@@ -168,7 +168,7 @@ func (a *ib) GetInstruments(root string) ([]*adapter.Instrument, error) {
 
 //=============================================================================
 
-func (a *ib) GetPriceBars(symbol string, date datatype.IntDate) (*adapter.PriceBars, error) {
+func (a *ib) GetPriceBars(symbol string, date types.Date) (*adapter.PriceBars, error) {
 	return nil, nil
 }
 

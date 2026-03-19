@@ -40,9 +40,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/algotiqa/core/datatype"
 	"github.com/algotiqa/core/req"
 	"github.com/algotiqa/system-adapter/pkg/adapter"
+	"github.com/algotiqa/types"
 )
 
 //=============================================================================
@@ -263,7 +263,7 @@ func (a *tradestation) GetInstruments(root string) ([]*adapter.Instrument, error
 
 //=============================================================================
 
-func (a *tradestation) GetPriceBars(symbol string, date datatype.IntDate) (*adapter.PriceBars, error) {
+func (a *tradestation) GetPriceBars(symbol string, date types.Date) (*adapter.PriceBars, error) {
 	//--- 40 days is the maximum number of 1 min bars that TradeStation can return (57600 bars)
 	endDate := date.AddDays(40 - 1)
 
@@ -328,7 +328,7 @@ func (a *tradestation) GetPriceBars(symbol string, date datatype.IntDate) (*adap
 	}
 
 	if lastBarTime != nil {
-		lastDate := datatype.ToIntDate(lastBarTime)
+		lastDate := types.ToDate(lastBarTime)
 		priceBars.Days = date.Days(lastDate) + 1
 	}
 

@@ -27,8 +27,8 @@ package local
 import (
 	"net/http"
 
-	"github.com/algotiqa/core/datatype"
 	"github.com/algotiqa/system-adapter/pkg/adapter"
+	"github.com/algotiqa/types"
 )
 
 //=============================================================================
@@ -145,7 +145,7 @@ func (a *local) GetInstruments(root string) ([]*adapter.Instrument, error) {
 
 //=============================================================================
 
-func (a *local) GetPriceBars(symbol string, date datatype.IntDate) (*adapter.PriceBars, error) {
+func (a *local) GetPriceBars(symbol string, date types.Date) (*adapter.PriceBars, error) {
 	return nil, nil
 }
 

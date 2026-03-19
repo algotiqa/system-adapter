@@ -28,10 +28,10 @@ import (
 	"sync"
 
 	"github.com/algotiqa/core/auth"
-	"github.com/algotiqa/core/datatype"
 	"github.com/algotiqa/core/msg"
 	"github.com/algotiqa/core/req"
 	"github.com/algotiqa/system-adapter/pkg/adapter"
+	"github.com/algotiqa/types"
 )
 
 //=============================================================================
@@ -238,7 +238,7 @@ func GetInstruments(c *auth.Context, connectionCode string, root string) ([]*ada
 
 //=============================================================================
 
-func GetPriceBars(c *auth.Context, connectionCode string, symbol string, date datatype.IntDate) (*adapter.PriceBars, error) {
+func GetPriceBars(c *auth.Context, connectionCode string, symbol string, date types.Date) (*adapter.PriceBars, error) {
 	ctx, err := getConnectionContext(c, connectionCode)
 	if err != nil {
 		return nil, err
