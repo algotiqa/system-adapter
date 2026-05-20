@@ -44,7 +44,7 @@ func Init() {
 //=============================================================================
 
 func sendSystemRestartMessage() {
-	err := msg.SendMessage(msg.ExSystem, msg.SourceSystem, msg.TypeRestart, nil)
+	err := msg.SendMessage(msg.ExSystem, msg.SourceSystem, msg.TypeRestart, nil, nil)
 
 	if err != nil {
 		slog.Error("sendSystemRestartMessage: Could not publish the restart message", "error", err.Error())

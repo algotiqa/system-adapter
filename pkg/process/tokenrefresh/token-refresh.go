@@ -25,12 +25,13 @@ THE SOFTWARE.
 package tokenrefresh
 
 import (
+	"log/slog"
+	"time"
+
 	"github.com/algotiqa/core/msg"
 	"github.com/algotiqa/system-adapter/pkg/adapter"
 	"github.com/algotiqa/system-adapter/pkg/app"
 	"github.com/algotiqa/system-adapter/pkg/business"
-	"log/slog"
-	"time"
 )
 
 //=============================================================================
@@ -79,7 +80,7 @@ func sendConnectionChangeMessage(ctx *adapter.ConnectionContext) error {
 		Status:         ctx.GetStatus(),
 	}
 
-	return msg.SendMessage(msg.ExSystem, msg.SourceConnection, msg.TypeChange, &ccm)
+	return msg.SendMessage(msg.ExSystem, msg.SourceConnection, msg.TypeChange, &ccm, nil)
 }
 
 //=============================================================================

@@ -304,7 +304,7 @@ func sendConnectionChangeMessage(c *auth.Context, ctx *adapter.ConnectionContext
 		SystemCode:     ctx.GetAdapterInfo().Code,
 		Status:         ctx.GetStatus(),
 	}
-	err := msg.SendMessage(msg.ExSystem, msg.SourceConnection, msg.TypeChange, &ccm)
+	err := msg.SendMessage(msg.ExSystem, msg.SourceConnection, msg.TypeChange, &ccm, nil)
 
 	if err != nil {
 		c.Log.Error("sendConnectionChangeMessage: Could not publish the change message", "error", err.Error())
