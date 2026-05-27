@@ -195,8 +195,9 @@ func Disconnect(c *auth.Context, connectionCode string) error {
 
 	delete(uc.contexts, connectionCode)
 	_ = ctx.Disconnect()
+	err = sendConnectionChangeMessage(c, ctx)
 
-	return nil
+	return err
 }
 
 //=============================================================================
