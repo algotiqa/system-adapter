@@ -3,7 +3,7 @@ module github.com/algotiqa/system-adapter
 go 1.25.8
 
 require (
-	github.com/algotiqa/core v1.20.8
+	github.com/algotiqa/core v1.20.11
 	github.com/algotiqa/types v0.0.8
 	github.com/gin-gonic/gin v1.12.0
 	golang.org/x/net v0.54.0
