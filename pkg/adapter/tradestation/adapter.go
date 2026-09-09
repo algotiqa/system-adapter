@@ -347,13 +347,13 @@ func (a *tradestation) GetAccounts() ([]*adapter.Account, error) {
 		}
 
 		b := bres.Balances[0]
-		acc.CashBalance = toFloat64(b.CashBalance)
-		acc.Equity = toFloat64(b.Equity)
-		acc.RealizedProfitLoss = toFloat64(b.BalanceDetail.RealizedProfitLoss)
+		acc.CashBalance          = toFloat64(b.CashBalance)
+		acc.Equity               = toFloat64(b.Equity)
+		acc.RealizedProfitLoss   = toFloat64(b.BalanceDetail.RealizedProfitLoss)
 		acc.UnrealizedProfitLoss = toFloat64(b.BalanceDetail.UnrealizedProfitLoss)
-		acc.OpenOrderMargin = toFloat64(b.BalanceDetail.OpenOrderMargin)
-		acc.InitialMargin = toFloat64(b.BalanceDetail.InitialMargin)
-		acc.MaintenanceMargin = toFloat64(b.BalanceDetail.MaintenanceMargin)
+		acc.OpenOrderMargin      = toFloat64(b.BalanceDetail.OpenOrderMargin)
+		acc.InitialMargin        = toFloat64(b.BalanceDetail.InitialMargin)
+		acc.MaintenanceMargin    = toFloat64(b.BalanceDetail.MaintenanceMargin)
 	}
 
 	return accounts, nil
@@ -474,11 +474,15 @@ func convertAccounts(ar *AccountsResponse) []*adapter.Account {
 	var list []*adapter.Account
 
 	for _, acc := range ar.Accounts {
-		if acc.AccountType == "Futures" && acc.Status == "Active" {
+		if acc.AccountType == "Futures" {
 			var aa adapter.Account
 			aa.Code = acc.AccountID
 			aa.Type = adapter.AccountTypeFutures
 			aa.CurrencyCode = acc.Currency
+
+			if acc.Status != "Active" {
+				aa.StatusMessage = acc.Status
+			}
 
 			list = append(list, &aa)
 		}

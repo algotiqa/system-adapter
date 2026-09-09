@@ -127,6 +127,7 @@ type Info struct {
 	SupportsBroker       bool        `json:"supportsBroker"`
 	SupportsMultipleData bool        `json:"supportsMultipleData"`
 	SupportsInventory    bool        `json:"supportsInventory"`
+	SupportsAccount      bool        `json:"supportsAccount"`
 	ConfigParams         []*ParamDef `json:"configParams"`
 	ConnectParams        []*ParamDef `json:"connectParams"`
 }
@@ -172,11 +173,10 @@ type Adapter interface {
 //===
 //=============================================================================
 
-type AccountType int
+type AccountType string
 
 const (
-	AccountTypeFutures = 0
-	AccountTypeCrypto  = 1
+	AccountTypeFutures AccountType = "FU"
 )
 
 //-----------------------------------------------------------------------------
@@ -192,6 +192,7 @@ type Account struct {
 	OpenOrderMargin      float64     `json:"openOrderMargin"`
 	InitialMargin        float64     `json:"initialMargin"`
 	MaintenanceMargin    float64     `json:"maintenanceMargin"`
+	StatusMessage        string      `json:"statusMessage"`
 }
 
 //=============================================================================

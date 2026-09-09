@@ -142,13 +142,14 @@ var connectParamsCode = []*adapter.ParamDef{
 //-----------------------------------------------------------------------------
 
 var info = adapter.Info{
-	Code:                 "TS",
-	Name:                 "Tradestation",
-	ConfigParams:         configParams,
-	SupportsData:         true,
-	SupportsBroker:       true,
+	Code                : "TS",
+	Name                : "Tradestation",
+	ConfigParams        : configParams,
+	SupportsData        : true,
+	SupportsBroker      : true,
 	SupportsMultipleData: false,
-	SupportsInventory:    true,
+	SupportsInventory   : true,
+	SupportsAccount     : true,
 }
 
 //=============================================================================

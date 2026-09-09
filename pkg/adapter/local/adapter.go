@@ -23,13 +23,14 @@ var configParams []*adapter.ParamDef
 //-----------------------------------------------------------------------------
 
 var info = adapter.Info{
-	Code:                 "LOCAL",
-	Name:                 "Local system",
-	ConfigParams:         configParams,
-	SupportsData:         true,
-	SupportsBroker:       true,
+	Code                : "LOCAL",
+	Name                : "Local system",
+	ConfigParams        : configParams,
+	SupportsData        : true,
+	SupportsBroker      : true,
 	SupportsMultipleData: true,
-	SupportsInventory:    false,
+	SupportsInventory   : false,
+	SupportsAccount     : false,
 }
 
 //=============================================================================
