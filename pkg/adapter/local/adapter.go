@@ -30,7 +30,7 @@ var info = adapter.Info{
 	SupportsBroker      : true,
 	SupportsMultipleData: true,
 	SupportsInventory   : false,
-	SupportsAccount     : false,
+	SupportsAccounting  : false,
 }
 
 //=============================================================================

@@ -127,7 +127,7 @@ type Info struct {
 	SupportsBroker       bool        `json:"supportsBroker"`
 	SupportsMultipleData bool        `json:"supportsMultipleData"`
 	SupportsInventory    bool        `json:"supportsInventory"`
-	SupportsAccount      bool        `json:"supportsAccount"`
+	SupportsAccounting   bool        `json:"supportsAccounting"`
 	ConfigParams         []*ParamDef `json:"configParams"`
 	ConnectParams        []*ParamDef `json:"connectParams"`
 }

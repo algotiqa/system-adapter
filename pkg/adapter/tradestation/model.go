@@ -149,7 +149,7 @@ var info = adapter.Info{
 	SupportsBroker      : true,
 	SupportsMultipleData: false,
 	SupportsInventory   : true,
-	SupportsAccount     : true,
+	SupportsAccounting  : true,
 }
 
 //=============================================================================
